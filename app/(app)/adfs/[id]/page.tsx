@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import { toast } from "sonner";
-import { ChevronRight, ClipboardCheck, FileText, FileWarning, Lock, Plus, Trash2, Users2 } from "lucide-react";
+import { ChevronRight, ClipboardCheck, FileText, FileWarning, Lock, Plus, Trash2, UserCheck, Users2, UserX } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -20,12 +20,14 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { FiltroSegmentado } from "@/components/filtro-segmentado";
 import { api, ApiClientError } from "@/lib/api-client";
 
 type Adf = {
   id: string;
   numeroAdf: string;
   status: string;
+  ativa: boolean;
   associacao_nome: string;
   instrutor_nome: string;
   instrutor_aux_nome: string | null;
@@ -38,6 +40,7 @@ type Candidato = {
   candidatoNome: string;
   candidatoRegistroTmc: string;
   nivelIrata: number;
+  ativo: boolean;
   status: string;
   resultado: string | null;
   aprovado: boolean | null;
@@ -49,6 +52,7 @@ export default function AdfDetailPage() {
   const { id } = useParams<{ id: string }>();
   const [adf, setAdf] = useState<Adf | null>(null);
   const [candidatos, setCandidatos] = useState<Candidato[]>([]);
+  const [filtroCand, setFiltroCand] = useState("ativos");
   const [open, setOpen] = useState(false);
   const [saving, setSaving] = useState(false);
 
@@ -91,6 +95,29 @@ export default function AdfDetailPage() {
 
   const [fechando, setFechando] = useState(false);
 
+  async function toggleAtivaAdf() {
+    if (!adf) return;
+    if (adf.ativa && !confirm("Desativar esta ADF? Ela sai das listas padrão, mas pode ser reativada no filtro 'Desativadas'.")) return;
+    try {
+      await api(`/adfs/${id}/ativa`, { method: "POST", body: JSON.stringify({ ativa: !adf.ativa }) });
+      toast.success(adf.ativa ? "ADF desativada" : "ADF ativada");
+      reload();
+    } catch (err) {
+      toast.error(err instanceof ApiClientError ? err.message : "Erro ao atualizar ADF");
+    }
+  }
+
+  async function toggleAtivoCandidato(c: Candidato) {
+    if (c.ativo && !confirm(`Desativar ${c.candidatoNome}? Ele sai da presença, briefing e relatórios, mas pode ser reativado.`)) return;
+    try {
+      await api(`/adfs/${id}/candidatos/${c.id}`, { method: "PUT", body: JSON.stringify({ ativo: !c.ativo }) });
+      toast.success(c.ativo ? "Candidato desativado" : "Candidato reativado");
+      reload();
+    } catch (err) {
+      toast.error(err instanceof ApiClientError ? err.message : "Erro ao atualizar candidato");
+    }
+  }
+
   async function fecharAdf() {
     if (!confirm("Fechar esta ADF? Após o fechamento não será mais possível alterar avaliações, presenças ou briefing.")) return;
     setFechando(true);
@@ -117,6 +144,10 @@ export default function AdfDetailPage() {
   }
 
   if (!adf) return <p className="text-sm text-muted-foreground">Carregando...</p>;
+
+  const candidatosVisiveis = candidatos.filter((c) =>
+    filtroCand === "ativos" ? c.ativo : filtroCand === "inativos" ? !c.ativo : true
+  );
 
   const candidatoDialog = (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -177,7 +208,10 @@ export default function AdfDetailPage() {
             {new Date(adf.dataInicio).toLocaleDateString("pt-BR")} – {new Date(adf.dataTermino).toLocaleDateString("pt-BR")}
           </p>
         </div>
-        <Badge>{adf.status}</Badge>
+        <div className="flex items-center gap-2">
+          {!adf.ativa && <Badge variant="secondary">desativada</Badge>}
+          <Badge>{adf.status}</Badge>
+        </div>
       </div>
 
       <div className="flex flex-wrap gap-2">
@@ -197,6 +231,9 @@ export default function AdfDetailPage() {
             {fechando ? "Fechando..." : "Fechar ADF"}
           </Button>
         )}
+        <Button variant="outline" size="sm" onClick={toggleAtivaAdf}>
+          {adf.ativa ? "Desativar ADF" : "Ativar ADF"}
+        </Button>
       </div>
 
       <div className="grid grid-cols-3 gap-2">
@@ -235,16 +272,28 @@ export default function AdfDetailPage() {
           {candidatoDialog}
         </div>
 
-        {candidatos.length === 0 && (
+        <div className="mb-3">
+          <FiltroSegmentado
+            value={filtroCand}
+            onChange={setFiltroCand}
+            options={[
+              { value: "ativos", label: "Ativos" },
+              { value: "inativos", label: "Inativos" },
+              { value: "todos", label: "Todos" },
+            ]}
+          />
+        </div>
+
+        {candidatosVisiveis.length === 0 && (
           <Card>
-            <CardContent className="py-8 text-center text-sm text-muted-foreground">Nenhum candidato cadastrado.</CardContent>
+            <CardContent className="py-8 text-center text-sm text-muted-foreground">Nenhum candidato nesse filtro.</CardContent>
           </Card>
         )}
 
         {/* Cards — mobile */}
         <div className="flex flex-col gap-3 md:hidden">
-          {candidatos.map((c) => (
-            <Card key={c.id}>
+          {candidatosVisiveis.map((c) => (
+            <Card key={c.id} className={c.ativo ? undefined : "opacity-70"}>
               <CardContent className="flex items-center gap-3 py-4">
                 <Link href={`/adfs/${id}/candidatos/${c.id}/avaliacao` as any} className="flex flex-1 flex-col gap-1.5">
                   <div className="flex items-center gap-2">
@@ -252,6 +301,11 @@ export default function AdfDetailPage() {
                     <Badge variant="outline" className="text-xs">
                       N{c.nivelIrata}
                     </Badge>
+                    {!c.ativo && (
+                      <Badge variant="secondary" className="text-xs">
+                        desativado
+                      </Badge>
+                    )}
                   </div>
                   <p className="text-sm text-muted-foreground">Registro TMC: {c.candidatoRegistroTmc}</p>
                   <div className="flex items-center gap-2">
@@ -269,12 +323,19 @@ export default function AdfDetailPage() {
                     )}
                   </div>
                 </Link>
-                <div className="flex flex-col items-center gap-2">
+                <div className="flex flex-col items-center gap-1">
                   <ChevronRight className="size-5 text-muted-foreground" />
+                  <button
+                    onClick={() => toggleAtivoCandidato(c)}
+                    className="flex size-9 items-center justify-center rounded-full text-muted-foreground hover:bg-muted"
+                    aria-label={c.ativo ? "Desativar candidato" : "Reativar candidato"}
+                  >
+                    {c.ativo ? <UserX className="size-4" /> : <UserCheck className="size-4 text-success" />}
+                  </button>
                   {c.status !== "finalizada" && (
                     <button
                       onClick={() => removeCandidato(c.id)}
-                      className="flex size-8 items-center justify-center rounded-full text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+                      className="flex size-9 items-center justify-center rounded-full text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
                       aria-label="Remover candidato"
                     >
                       <Trash2 className="size-4" />
@@ -302,9 +363,16 @@ export default function AdfDetailPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {candidatos.map((c) => (
-                    <TableRow key={c.id}>
-                      <TableCell className="font-medium">{c.candidatoNome}</TableCell>
+                  {candidatosVisiveis.map((c) => (
+                    <TableRow key={c.id} className={c.ativo ? undefined : "opacity-70"}>
+                      <TableCell className="font-medium">
+                        {c.candidatoNome}
+                        {!c.ativo && (
+                          <Badge variant="secondary" className="ml-2 text-xs">
+                            desativado
+                          </Badge>
+                        )}
+                      </TableCell>
                       <TableCell>{c.candidatoRegistroTmc}</TableCell>
                       <TableCell>N{c.nivelIrata}</TableCell>
                       <TableCell className="text-sm">
@@ -327,6 +395,9 @@ export default function AdfDetailPage() {
                           render={<Link href={`/adfs/${id}/candidatos/${c.id}/avaliacao` as any} />}
                         >
                           Avaliar
+                        </Button>
+                        <Button variant="ghost" size="sm" onClick={() => toggleAtivoCandidato(c)}>
+                          {c.ativo ? "Desativar" : "Reativar"}
                         </Button>
                         {c.status !== "finalizada" && (
                           <Button variant="ghost" size="sm" onClick={() => removeCandidato(c.id)}>

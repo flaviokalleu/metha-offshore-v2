@@ -18,6 +18,7 @@ export const PUT = withErrorHandling(async (req, { params }: { params: Promise<{
       candidatoRegistroTmc: body.candidato_registro_tmc ?? existing.candidatoRegistroTmc,
       candidatoEmail: body.candidato_email !== undefined ? body.candidato_email : existing.candidatoEmail,
       nivelIrata: body.nivel_irata !== undefined ? Number(body.nivel_irata) : existing.nivelIrata,
+      ativo: typeof body.ativo === "boolean" ? body.ativo : existing.ativo,
     },
   });
   return NextResponse.json(row);

@@ -9,7 +9,7 @@ export const POST = withErrorHandling(async (req, { params }: { params: Promise<
 
   const adf = await prisma.adf.findUnique({
     where: { id },
-    include: { candidatos: { select: { status: true, candidatoNome: true } } },
+    include: { candidatos: { where: { ativo: true }, select: { status: true, candidatoNome: true } } },
   });
   if (!adf) return NextResponse.json({ error: "ADF não encontrada" }, { status: 404 });
   if (adf.status === "finalizada") return NextResponse.json({ error: "ADF já está fechada" }, { status: 400 });

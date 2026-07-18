@@ -7,7 +7,7 @@ export const GET = withErrorHandling(async (req, { params }: { params: Promise<{
   requireAuth(req);
   const { id } = await params;
   const rows = await prisma.presenca.findMany({
-    where: { adfId: id },
+    where: { adfId: id, candidato: { ativo: true } },
     include: { candidato: true },
     orderBy: [{ candidato: { candidatoNome: "asc" } }, { diaSemana: "asc" }],
   });

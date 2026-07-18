@@ -15,7 +15,7 @@ export const GET = withErrorHandling(async (req, { params }: { params: Promise<{
 
   const [candidatos, discrepancias] = await Promise.all([
     prisma.adfCandidato.findMany({
-      where: { adfId: id },
+      where: { adfId: id, ativo: true },
       orderBy: { candidatoNome: "asc" },
       include: {
         avaliacoes: { include: { manobra: true } },

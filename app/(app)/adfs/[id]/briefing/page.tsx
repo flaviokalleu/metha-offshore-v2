@@ -29,7 +29,7 @@ const ITENS = [
   "Dúvidas e esclarecimentos gerais",
 ];
 
-type Candidato = { id: string; candidatoNome: string };
+type Candidato = { id: string; candidatoNome: string; ativo: boolean };
 type Briefing = {
   itens_confirmados: boolean[];
   temas_abordados: string | null;
@@ -53,7 +53,7 @@ export default function BriefingPage() {
       setBriefing(b);
       setAssinaturaInstrutor(b.instrutor_assinatura);
     });
-    api<Candidato[]>(`/adfs/${id}/candidatos`).then(setCandidatos);
+    api<Candidato[]>(`/adfs/${id}/candidatos`).then((cs) => setCandidatos(cs.filter((c) => c.ativo)));
   }
   useEffect(reload, [id]);
 

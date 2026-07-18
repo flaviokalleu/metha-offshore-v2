@@ -16,6 +16,7 @@ type Adf = {
   id: string;
   numeroAdf: string;
   status: string;
+  ativa: boolean;
   associacao_nome: string;
   instrutor_nome: string;
 };
@@ -32,9 +33,22 @@ export default function AdminAdfsPage() {
   }
   useEffect(reload, []);
 
-  const visiveis = rows.filter((a) =>
-    filtro === "andamento" ? a.status !== "finalizada" : filtro === "finalizadas" ? a.status === "finalizada" : true
-  );
+  const visiveis = rows.filter((a) => {
+    if (filtro === "andamento") return a.ativa && a.status !== "finalizada";
+    if (filtro === "finalizadas") return a.ativa && a.status === "finalizada";
+    if (filtro === "desativadas") return !a.ativa;
+    return true;
+  });
+
+  async function toggleAtiva(a: Adf) {
+    try {
+      await api(`/adfs/${a.id}/ativa`, { method: "POST", body: JSON.stringify({ ativa: !a.ativa }) });
+      toast.success(a.ativa ? "ADF desativada" : "ADF ativada");
+      reload();
+    } catch (err) {
+      toast.error(err instanceof ApiClientError ? err.message : "Erro ao atualizar ADF");
+    }
+  }
 
   async function reabrir() {
     if (!reabrindo || !justificativa.trim()) return;
@@ -63,6 +77,7 @@ export default function AdminAdfsPage() {
           { value: "todas", label: "Todas" },
           { value: "andamento", label: "Em andamento" },
           { value: "finalizadas", label: "Finalizadas" },
+          { value: "desativadas", label: "Desativadas" },
         ]}
       />
 
@@ -89,14 +104,20 @@ export default function AdminAdfsPage() {
                   <TableCell>{a.associacao_nome}</TableCell>
                   <TableCell>{a.instrutor_nome}</TableCell>
                   <TableCell>
-                    <Badge>{a.status}</Badge>
+                    <div className="flex items-center gap-1.5">
+                      <Badge>{a.status}</Badge>
+                      {!a.ativa && <Badge variant="secondary">desativada</Badge>}
+                    </div>
                   </TableCell>
-                  <TableCell className="text-right">
+                  <TableCell className="flex justify-end gap-2 text-right">
                     {a.status === "finalizada" && (
                       <Button variant="outline" size="sm" onClick={() => setReabrindo(a)}>
                         Reabrir
                       </Button>
                     )}
+                    <Button variant="ghost" size="sm" onClick={() => toggleAtiva(a)}>
+                      {a.ativa ? "Desativar" : "Ativar"}
+                    </Button>
                   </TableCell>
                 </TableRow>
               ))}

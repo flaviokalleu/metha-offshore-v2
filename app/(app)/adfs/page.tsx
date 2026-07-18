@@ -14,6 +14,7 @@ type Adf = {
   id: string;
   numeroAdf: string;
   status: string;
+  ativa: boolean;
   total_candidatos: number;
   associacao_nome: string;
   instrutor_nome: string;
@@ -39,9 +40,12 @@ export default function AdfsListPage() {
       .finally(() => setLoading(false));
   }, []);
 
-  const visiveis = adfs.filter((a) =>
-    filtro === "andamento" ? a.status !== "finalizada" : filtro === "finalizadas" ? a.status === "finalizada" : true
-  );
+  const visiveis = adfs.filter((a) => {
+    if (filtro === "andamento") return a.ativa && a.status !== "finalizada";
+    if (filtro === "finalizadas") return a.ativa && a.status === "finalizada";
+    if (filtro === "desativadas") return !a.ativa;
+    return true;
+  });
 
   return (
     <div className="flex flex-col gap-6">
@@ -62,6 +66,7 @@ export default function AdfsListPage() {
         options={[
           { value: "andamento", label: "Em andamento" },
           { value: "finalizadas", label: "Finalizadas" },
+          { value: "desativadas", label: "Desativadas" },
           { value: "todas", label: "Todas" },
         ]}
       />
@@ -82,6 +87,7 @@ export default function AdfsListPage() {
                   <div className="flex items-center gap-2">
                     <span className="font-semibold">{a.numeroAdf}</span>
                     <Badge variant={(STATUS_VARIANT[a.status] as any) ?? "default"}>{a.status}</Badge>
+                    {!a.ativa && <Badge variant="secondary">desativada</Badge>}
                   </div>
                   <p className="text-sm text-muted-foreground">
                     {a.instrutor_nome} · {a.associacao_nome}
@@ -127,7 +133,10 @@ export default function AdfsListPage() {
                   </TableCell>
                   <TableCell>{a.total_candidatos}/14</TableCell>
                   <TableCell>
-                    <Badge variant={(STATUS_VARIANT[a.status] as any) ?? "default"}>{a.status}</Badge>
+                    <div className="flex items-center gap-1.5">
+                      <Badge variant={(STATUS_VARIANT[a.status] as any) ?? "default"}>{a.status}</Badge>
+                      {!a.ativa && <Badge variant="secondary">desativada</Badge>}
+                    </div>
                   </TableCell>
                 </TableRow>
               ))}

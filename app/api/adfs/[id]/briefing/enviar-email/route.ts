@@ -41,7 +41,7 @@ export const POST = withErrorHandling(async (req, { params }: { params: Promise<
   const briefing = await prisma.briefing.findUnique({ where: { adfId: id } });
   if (!briefing) return NextResponse.json({ error: "Briefing não encontrado" }, { status: 404 });
 
-  const candidatos = await prisma.adfCandidato.findMany({ where: { adfId: id }, orderBy: { candidatoNome: "asc" } });
+  const candidatos = await prisma.adfCandidato.findMany({ where: { adfId: id, ativo: true }, orderBy: { candidatoNome: "asc" } });
   const comEmail = candidatos.filter((c) => c.candidatoEmail);
   const semEmail = candidatos.filter((c) => !c.candidatoEmail).map((c) => c.candidatoNome);
 
