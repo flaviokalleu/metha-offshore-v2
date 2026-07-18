@@ -1,0 +1,23 @@
+services:
+  app:
+    build: .
+    container_name: metha_offshore_app
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      DATABASE_URL: file:/app/data/prod.db
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET}
+      ADMIN_NOME: ${ADMIN_NOME:-Administrador Metha}
+      ADMIN_EMAIL: ${ADMIN_EMAIL:-admin@methaoffshore.com.br}
+      ADMIN_SENHA: ${ADMIN_SENHA}
+    volumes:
+      - app_data:/app/data
+    # Publicado somente em localhost: o nginx nativo do host faz o proxy reverso.
+    # Isolado do Metha Inspeção (porta 3000) e demais serviços já rodando na VPS.
+    ports:
+      - "127.0.0.1:3001:3000"
+
+volumes:
+  app_data:

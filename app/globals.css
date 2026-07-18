@@ -1,26 +1,178 @@
 @import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+@custom-variant dark (&:is(.dark *));
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-barlow);
+  --font-mono: ui-monospace, monospace;
+  --font-heading: var(--font-barlow-condensed);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-hivis: var(--hivis);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+:root {
+  /* Paleta "equipamento de campo" Metha Offshore:
+     abismo #0E1B26 (aço profundo) · névoa #EEF1F3 · laranja alta-visibilidade #F1600D
+     verde-sinal #1B7A46 · vermelho-sinal #C42323 */
+  --background: #EEF1F3;
+  --foreground: #1C2733;
+  --card: #ffffff;
+  --card-foreground: #1C2733;
+  --popover: #ffffff;
+  --popover-foreground: #1C2733;
+  --primary: #0E1B26;
+  --primary-foreground: #ffffff;
+  --secondary: #E2E7EB;
+  --secondary-foreground: #24303B;
+  --muted: #E7EBEE;
+  --muted-foreground: #5C6B77;
+  --accent: #FDEBDD;
+  --accent-foreground: #8A3A08;
+  --destructive: #C42323;
+  --success: #1B7A46;
+  --success-foreground: #ffffff;
+  --warning: #B44A0B;
+  --warning-foreground: #ffffff;
+  --hivis: #F1600D;
+  --border: #D3DAE0;
+  --input: #C6CFD6;
+  --ring: #F1600D;
+  --chart-1: #0E1B26;
+  --chart-2: #F1600D;
+  --chart-3: #5C6B77;
+  --chart-4: #1B7A46;
+  --chart-5: #C42323;
+  --radius: 0.375rem;
+  --sidebar: #0E1B26;
+  --sidebar-foreground: #E9EDF1;
+  --sidebar-primary: #F1600D;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: rgba(255, 255, 255, 0.08);
+  --sidebar-accent-foreground: #ffffff;
+  --sidebar-border: rgba(255, 255, 255, 0.12);
+  --sidebar-ring: #F1600D;
+}
+
+.dark {
+  --background: #0B141C;
+  --foreground: #E6EBEF;
+  --card: #121F2B;
+  --card-foreground: #E6EBEF;
+  --popover: #121F2B;
+  --popover-foreground: #E6EBEF;
+  --primary: #E6EBEF;
+  --primary-foreground: #0E1B26;
+  --secondary: #1B2A38;
+  --secondary-foreground: #E6EBEF;
+  --muted: #1B2A38;
+  --muted-foreground: #90A0AD;
+  --accent: #34220F;
+  --accent-foreground: #F5A16C;
+  --destructive: #E05252;
+  --success: #34A26A;
+  --success-foreground: #0B1220;
+  --warning: #F1874A;
+  --warning-foreground: #0B1220;
+  --hivis: #F1600D;
+  --border: rgba(255, 255, 255, 0.1);
+  --input: rgba(255, 255, 255, 0.15);
+  --ring: #F1600D;
+  --chart-1: #E6EBEF;
+  --chart-2: #F1600D;
+  --chart-3: #90A0AD;
+  --chart-4: #34A26A;
+  --chart-5: #E05252;
+  --sidebar: #08111A;
+  --sidebar-foreground: #E6EBEF;
+  --sidebar-primary: #F1600D;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: rgba(255, 255, 255, 0.08);
+  --sidebar-accent-foreground: #E6EBEF;
+  --sidebar-border: rgba(255, 255, 255, 0.1);
+  --sidebar-ring: #F1600D;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+  html {
+    @apply font-sans;
+  }
+  /* Títulos com cara de sinalização industrial: condensado, caixa alta */
+  h1,
+  h2 {
+    font-family: var(--font-barlow-condensed), var(--font-barlow), sans-serif;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    font-weight: 600;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@layer utilities {
+  /* Assinatura visual: listra de perigo (equipamento offshore) */
+  .stripe-hazard {
+    background-image: repeating-linear-gradient(
+      135deg,
+      var(--hivis) 0,
+      var(--hivis) 12px,
+      var(--primary) 12px,
+      var(--primary) 24px
+    );
+  }
+  .font-display {
+    font-family: var(--font-barlow-condensed), var(--font-barlow), sans-serif;
+  }
+}
+
+@media print {
+  .stripe-hazard {
+    display: none;
+  }
 }

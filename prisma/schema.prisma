@@ -1,0 +1,248 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model Associacao {
+  id       String   @id @default(uuid())
+  nome     String
+  sigla    String?
+  ativa    Boolean  @default(true)
+  criadoEm DateTime @default(now())
+  adfs     Adf[]
+
+  @@map("associacoes")
+}
+
+model Instrutor {
+  id             String   @id @default(uuid())
+  nome           String
+  registroIrata  String   @unique
+  nivel          Int
+  email          String?
+  telefone       String?
+  ativo          Boolean  @default(true)
+  criadoEm       DateTime @default(now())
+  atualizadoEm   DateTime @updatedAt
+  usuarios       Usuario[]
+  adfsComoTitular Adf[]   @relation("AdfInstrutor")
+  adfsComoAuxiliar Adf[]  @relation("AdfInstrutorAuxiliar")
+
+  @@map("instrutores")
+}
+
+model Usuario {
+  id                String    @id @default(uuid())
+  nome              String
+  email             String    @unique
+  senhaHash         String
+  perfil            String // 'instrutor' | 'admin'
+  registroIrata     String?   @unique
+  instrutorId       String?
+  instrutor         Instrutor? @relation(fields: [instrutorId], references: [id])
+  status            String    @default("ativo") // ativo | inativo | bloqueado
+  tentativasLogin   Int       @default(0)
+  ultimoLogin       DateTime?
+  resetToken        String?
+  resetTokenExpira  DateTime?
+  criadoEm          DateTime  @default(now())
+  atualizadoEm      DateTime  @updatedAt
+  refreshTokens     RefreshToken[]
+  adfsCriadas       Adf[]     @relation("AdfCriadoPor")
+  incidentesCriados Incidente[]
+  auditLogs         AuditLog[]
+
+  @@map("usuarios")
+}
+
+model RefreshToken {
+  id         String    @id @default(uuid())
+  usuarioId  String
+  usuario    Usuario   @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  token      String    @unique
+  expiraEm   DateTime
+  criadoEm   DateTime  @default(now())
+  revogado   Boolean   @default(false)
+
+  @@map("refresh_tokens")
+}
+
+model Adf {
+  id                   String   @id @default(uuid())
+  numeroAdf            String   @unique
+  associacaoId         String
+  associacao           Associacao @relation(fields: [associacaoId], references: [id])
+  dataInicio           DateTime
+  dataTermino          DateTime
+  instrutorId          String
+  instrutor            Instrutor @relation("AdfInstrutor", fields: [instrutorId], references: [id])
+  instrutorAuxiliarId  String?
+  instrutorAuxiliar    Instrutor? @relation("AdfInstrutorAuxiliar", fields: [instrutorAuxiliarId], references: [id])
+  status               String   @default("aberta") // aberta | finalizada | reaberta
+  ativa                Boolean  @default(true) // false = desativada (arquivada, some das listas padrão)
+  criadoPor            String
+  criadoPorUsuario     Usuario  @relation("AdfCriadoPor", fields: [criadoPor], references: [id])
+  criadoEm             DateTime @default(now())
+  atualizadoEm         DateTime @updatedAt
+
+  candidatos  AdfCandidato[]
+  presencas   Presenca[]
+  briefing    Briefing?
+  incidentes  Incidente[]
+  auditLogs   AuditLog[]
+
+  @@map("adfs")
+}
+
+model AdfCandidato {
+  id                      String    @id @default(uuid())
+  adfId                   String
+  adf                     Adf       @relation(fields: [adfId], references: [id], onDelete: Cascade)
+  candidatoNome           String
+  candidatoRegistroTmc    String
+  candidatoEmail          String?
+  nivelIrata              Int
+  ativo                   Boolean   @default(true) // false = desativado (ex: desistência)
+  resultado               String?
+  aprovado                Boolean?
+  qtdDiscLeves            Int       @default(0)
+  qtdDiscGraves           Int       @default(0)
+  status                  String    @default("aberta") // aberta | finalizada
+  assinaturaCandidato     String?
+  assinaturaCandidatoEm   DateTime?
+  assinaturaInstrutor     String?
+  assinaturaInstrutorEm   DateTime?
+  cienciaDocumentos       Boolean   @default(false)
+  cienciaDocumentosEm     DateTime?
+  finalizadaEm            DateTime?
+  criadoEm                DateTime  @default(now())
+  atualizadoEm             DateTime @updatedAt
+
+  avaliacoes  AvaliacaoManobra[]
+  presencas   Presenca[]
+  auditLogs   AuditLog[]
+
+  @@map("adf_candidatos")
+}
+
+model DiscrepanciaCatalogo {
+  id        String  @id @default(uuid())
+  tipo      String // leve | grave
+  codigo    String
+  descricao String
+  ativa     Boolean @default(true)
+
+  @@unique([tipo, codigo])
+  @@map("discrepancias_catalogo")
+}
+
+model ManobraCatalogo {
+  id      String  @id @default(uuid())
+  modulo  String
+  ordem   Int
+  nome    String
+  tipoN1  String  @default("na")
+  tipoN2  String  @default("na")
+  tipoN3  String  @default("na")
+  ativa   Boolean @default(true)
+
+  avaliacoes AvaliacaoManobra[]
+
+  @@map("manobras_catalogo")
+}
+
+model AvaliacaoManobra {
+  id              String   @id @default(uuid())
+  candidatoId     String
+  candidato       AdfCandidato @relation(fields: [candidatoId], references: [id], onDelete: Cascade)
+  manobraId       String
+  manobra         ManobraCatalogo @relation(fields: [manobraId], references: [id])
+  avaliado        Boolean  @default(false)
+  discTipo        String?  // leve | grave
+  discCodigos     String?  // JSON array serializado
+  discObservacao  String?
+  atualizadoEm    DateTime @updatedAt
+
+  @@unique([candidatoId, manobraId])
+  @@map("avaliacoes_manobras")
+}
+
+model Presenca {
+  id            String   @id @default(uuid())
+  adfId         String
+  adf           Adf      @relation(fields: [adfId], references: [id], onDelete: Cascade)
+  candidatoId   String
+  candidato     AdfCandidato @relation(fields: [candidatoId], references: [id], onDelete: Cascade)
+  diaSemana     String // segunda..sexta
+  dataDia       DateTime
+  status        String   @default("pendente") // presente | ausente | justificado | pendente
+  observacao    String?
+  assinatura    String?  // rubrica do candidato (dataURL)
+  assinaturaEm  DateTime?
+  atualizadoEm  DateTime @updatedAt
+
+  @@unique([candidatoId, diaSemana])
+  @@map("presencas")
+}
+
+model Briefing {
+  id                      String    @id @default(uuid())
+  adfId                   String    @unique
+  adf                     Adf       @relation(fields: [adfId], references: [id], onDelete: Cascade)
+  itensConfirmados        String    @default("[false,false,false,false,false,false,false,false,false,false,false,false,false]") // JSON array
+  temasAbordados          String?
+  observacoes             String?
+  assinaturasCandidatos   String    @default("[]") // JSON array
+  instrutorAssinatura     String?
+  instrutorAssinadoEm     DateTime?
+  atualizadoEm            DateTime  @updatedAt
+
+  @@map("briefings")
+}
+
+model Incidente {
+  id                    String    @id @default(uuid())
+  adfId                 String
+  adf                   Adf       @relation(fields: [adfId], references: [id], onDelete: Cascade)
+  tipoOcorrencia        String // incidente | nao_conformidade
+  relato                String
+  origem                String?
+  medidaAdotada         String?
+  comunicadoDirecao     Boolean   @default(false)
+  dataComunicado        DateTime?
+  responsavelNome       String?   // instrutor responsável pelo relatório
+  assinaturaInstrutor   String?
+  assinaturaCandidato   String?
+  direcaoTipoCorrecao   String?
+  direcaoRelato         String?
+  direcaoData           DateTime?
+  direcaoCoordenador    String?
+  criadoPor             String
+  criadoPorUsuario      Usuario   @relation(fields: [criadoPor], references: [id])
+  criadoEm              DateTime  @default(now())
+  atualizadoEm          DateTime  @updatedAt
+
+  @@map("incidentes")
+}
+
+model AuditLog {
+  id               String    @id @default(uuid())
+  adfId            String?
+  adf              Adf?      @relation(fields: [adfId], references: [id])
+  candidatoId      String?
+  candidato        AdfCandidato? @relation(fields: [candidatoId], references: [id])
+  usuarioId        String?
+  usuario          Usuario?  @relation(fields: [usuarioId], references: [id])
+  acao             String
+  statusAnterior   String?
+  statusNovo       String?
+  justificativa    String?
+  dadosAnteriores  String?
+  ipAddress        String?
+  criadoEm         DateTime  @default(now())
+
+  @@map("audit_log")
+}
