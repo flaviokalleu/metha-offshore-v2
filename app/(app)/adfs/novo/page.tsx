@@ -77,7 +77,9 @@ export default function NovaAdfPage() {
               <Label>Associação</Label>
               <Select value={associacaoId} onValueChange={(v) => setAssociacaoId(v ?? "")} required>
                 <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Selecione a associação" />
+                  <SelectValue placeholder="Selecione a associação">
+                    {associacaoId ? associacoes.find((a) => a.id === associacaoId)?.nome : undefined}
+                  </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
                   {associacoes.map((a) => (
@@ -104,7 +106,9 @@ export default function NovaAdfPage() {
               <Label>Instrutor responsável</Label>
               <Select value={instrutorId} onValueChange={(v) => setInstrutorId(v ?? "")} required>
                 <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Selecione o instrutor" />
+                  <SelectValue placeholder="Selecione o instrutor">
+                    {instrutorId ? instrutores.find((i) => i.id === instrutorId)?.nome : undefined}
+                  </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
                   {instrutores.map((i) => (
@@ -120,7 +124,9 @@ export default function NovaAdfPage() {
               <Label>Instrutor auxiliar (opcional)</Label>
               <Select value={instrutorAuxiliarId} onValueChange={(v) => setInstrutorAuxiliarId(v ?? "")}>
                 <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Nenhum" />
+                  <SelectValue placeholder="Nenhum">
+                    {instrutorAuxiliarId ? instrutores.find((i) => i.id === instrutorAuxiliarId)?.nome : undefined}
+                  </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
                   {instrutores.map((i) => (

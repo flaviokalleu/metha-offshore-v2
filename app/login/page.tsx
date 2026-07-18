@@ -33,10 +33,9 @@ export default function LoginPage() {
       <Card className="w-full max-w-sm pt-0 shadow-2xl ring-0">
         <div className="stripe-hazard h-1.5" />
         <CardContent className="pt-4">
-          <div className="mb-6 text-center">
-            <p className="font-display text-3xl font-semibold uppercase leading-none tracking-widest text-primary">
-              Metha <span className="text-(--hivis)">Offshore</span>
-            </p>
+          <div className="mb-6 flex flex-col items-center text-center">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/logo-metha.webp" alt="Metha Treinamentos Offshore" className="h-20 w-auto object-contain" />
             <p className="font-display mt-2 text-xs uppercase tracking-[0.2em] text-muted-foreground">
               Avaliação de Desempenho de Campo · IRATA
             </p>

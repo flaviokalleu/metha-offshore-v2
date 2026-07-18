@@ -1,4 +1,4 @@
-@import "tailwindcss";
+﻿@import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
@@ -54,9 +54,9 @@
 }
 
 :root {
-  /* Paleta "equipamento de campo" Metha Offshore:
-     abismo #0E1B26 (aço profundo) · névoa #EEF1F3 · laranja alta-visibilidade #F1600D
-     verde-sinal #1B7A46 · vermelho-sinal #C42323 */
+  /* Paleta Metha Offshore (cores do logo oficial):
+     abismo #0E1B26 - nevoa #EEF1F3 - laranja Metha #FF7420 - azul Metha #004080
+     verde-sinal #1B7A46 - vermelho-sinal #C42323 */
   --background: #EEF1F3;
   --foreground: #1C2733;
   --card: #ffffff;
@@ -76,24 +76,24 @@
   --success-foreground: #ffffff;
   --warning: #B44A0B;
   --warning-foreground: #ffffff;
-  --hivis: #F1600D;
+  --hivis: #FF7420;
   --border: #D3DAE0;
   --input: #C6CFD6;
-  --ring: #F1600D;
+  --ring: #FF7420;
   --chart-1: #0E1B26;
-  --chart-2: #F1600D;
+  --chart-2: #FF7420;
   --chart-3: #5C6B77;
   --chart-4: #1B7A46;
   --chart-5: #C42323;
   --radius: 0.375rem;
   --sidebar: #0E1B26;
   --sidebar-foreground: #E9EDF1;
-  --sidebar-primary: #F1600D;
+  --sidebar-primary: #FF7420;
   --sidebar-primary-foreground: #ffffff;
   --sidebar-accent: rgba(255, 255, 255, 0.08);
   --sidebar-accent-foreground: #ffffff;
   --sidebar-border: rgba(255, 255, 255, 0.12);
-  --sidebar-ring: #F1600D;
+  --sidebar-ring: #FF7420;
 }
 
 .dark {
@@ -116,23 +116,23 @@
   --success-foreground: #0B1220;
   --warning: #F1874A;
   --warning-foreground: #0B1220;
-  --hivis: #F1600D;
+  --hivis: #FF7420;
   --border: rgba(255, 255, 255, 0.1);
   --input: rgba(255, 255, 255, 0.15);
-  --ring: #F1600D;
+  --ring: #FF7420;
   --chart-1: #E6EBEF;
-  --chart-2: #F1600D;
+  --chart-2: #FF7420;
   --chart-3: #90A0AD;
   --chart-4: #34A26A;
   --chart-5: #E05252;
   --sidebar: #08111A;
   --sidebar-foreground: #E6EBEF;
-  --sidebar-primary: #F1600D;
+  --sidebar-primary: #FF7420;
   --sidebar-primary-foreground: #ffffff;
   --sidebar-accent: rgba(255, 255, 255, 0.08);
   --sidebar-accent-foreground: #E6EBEF;
   --sidebar-border: rgba(255, 255, 255, 0.1);
-  --sidebar-ring: #F1600D;
+  --sidebar-ring: #FF7420;
 }
 
 @layer base {
@@ -145,7 +145,7 @@
   html {
     @apply font-sans;
   }
-  /* Títulos com cara de sinalização industrial: condensado, caixa alta */
+  /* Titulos com cara de sinalizacao industrial: condensado, caixa alta */
   h1,
   h2 {
     font-family: var(--font-barlow-condensed), var(--font-barlow), sans-serif;
@@ -176,3 +176,4 @@
     display: none;
   }
 }
+

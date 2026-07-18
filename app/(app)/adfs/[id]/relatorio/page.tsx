@@ -76,6 +76,8 @@ export default function RelatorioAdfPage() {
       <div className="rounded-lg border bg-white p-4 text-black sm:p-6 print:rounded-none print:border-0 print:p-0">
         {/* Cabeçalho */}
         <div className="mb-4 border-b-2 border-black pb-3 text-center">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/logo-metha.webp" alt="Metha Treinamentos Offshore" className="mx-auto mb-2 h-14 w-auto object-contain" />
           <h1 className="text-lg font-bold uppercase">Relatório Completo — ADF {adf.numero_adf}</h1>
           <p className="text-sm">{adf.associacao_nome}</p>
           <p className="text-sm">

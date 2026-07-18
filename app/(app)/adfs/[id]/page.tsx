@@ -1,10 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { toast } from "sonner";
-import { ChevronRight, ClipboardCheck, FileText, FileWarning, Lock, Plus, Trash2, UserCheck, Users2, UserX } from "lucide-react";
+import { ChevronRight, ClipboardCheck, FileText, FileWarning, Lock, Pencil, Plus, Trash2, UserCheck, Users2, UserX } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -21,6 +21,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { FiltroSegmentado } from "@/components/filtro-segmentado";
+import { useAuth } from "@/lib/auth-context";
 import { api, ApiClientError } from "@/lib/api-client";
 
 type Adf = {
@@ -28,6 +29,9 @@ type Adf = {
   numeroAdf: string;
   status: string;
   ativa: boolean;
+  associacaoId: string;
+  instrutorId: string;
+  instrutorAuxiliarId: string | null;
   associacao_nome: string;
   instrutor_nome: string;
   instrutor_aux_nome: string | null;
@@ -39,6 +43,7 @@ type Candidato = {
   id: string;
   candidatoNome: string;
   candidatoRegistroTmc: string;
+  candidatoEmail: string | null;
   nivelIrata: number;
   ativo: boolean;
   status: string;
@@ -48,13 +53,19 @@ type Candidato = {
   qtdDiscGraves: number;
 };
 
+type Opcao = { id: string; nome: string };
+
 export default function AdfDetailPage() {
   const { id } = useParams<{ id: string }>();
+  const router = useRouter();
+  const { user } = useAuth();
   const [adf, setAdf] = useState<Adf | null>(null);
   const [candidatos, setCandidatos] = useState<Candidato[]>([]);
   const [filtroCand, setFiltroCand] = useState("ativos");
   const [open, setOpen] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [editandoAdf, setEditandoAdf] = useState(false);
+  const [editandoCand, setEditandoCand] = useState<Candidato | null>(null);
 
   const [nome, setNome] = useState("");
   const [registro, setRegistro] = useState("");
@@ -115,6 +126,19 @@ export default function AdfDetailPage() {
       reload();
     } catch (err) {
       toast.error(err instanceof ApiClientError ? err.message : "Erro ao atualizar candidato");
+    }
+  }
+
+  async function excluirAdf() {
+    if (!adf) return;
+    if (!confirm(`EXCLUIR a ADF ${adf.numeroAdf}? Todos os candidatos, avaliações, presenças, briefing e incidentes serão apagados. Essa ação NÃO pode ser desfeita.`)) return;
+    if (!confirm("Tem certeza mesmo? Essa é a última confirmação.")) return;
+    try {
+      await api(`/adfs/${id}`, { method: "DELETE" });
+      toast.success("ADF excluída");
+      router.push("/adfs");
+    } catch (err) {
+      toast.error(err instanceof ApiClientError ? err.message : "Erro ao excluir ADF");
     }
   }
 
@@ -215,6 +239,10 @@ export default function AdfDetailPage() {
       </div>
 
       <div className="flex flex-wrap gap-2">
+        <Button variant="outline" size="sm" onClick={() => setEditandoAdf(true)} className="gap-1.5">
+          <Pencil className="size-4" />
+          Editar
+        </Button>
         <Button
           variant="outline"
           size="sm"
@@ -234,6 +262,12 @@ export default function AdfDetailPage() {
         <Button variant="outline" size="sm" onClick={toggleAtivaAdf}>
           {adf.ativa ? "Desativar ADF" : "Ativar ADF"}
         </Button>
+        {user?.perfil === "admin" && (
+          <Button variant="destructive" size="sm" onClick={excluirAdf} className="gap-1.5">
+            <Trash2 className="size-4" />
+            Excluir
+          </Button>
+        )}
       </div>
 
       <div className="grid grid-cols-3 gap-2">
@@ -326,6 +360,13 @@ export default function AdfDetailPage() {
                 <div className="flex flex-col items-center gap-1">
                   <ChevronRight className="size-5 text-muted-foreground" />
                   <button
+                    onClick={() => setEditandoCand(c)}
+                    className="flex size-9 items-center justify-center rounded-full text-muted-foreground hover:bg-muted"
+                    aria-label="Editar candidato"
+                  >
+                    <Pencil className="size-4" />
+                  </button>
+                  <button
                     onClick={() => toggleAtivoCandidato(c)}
                     className="flex size-9 items-center justify-center rounded-full text-muted-foreground hover:bg-muted"
                     aria-label={c.ativo ? "Desativar candidato" : "Reativar candidato"}
@@ -396,6 +437,9 @@ export default function AdfDetailPage() {
                         >
                           Avaliar
                         </Button>
+                        <Button variant="ghost" size="sm" onClick={() => setEditandoCand(c)}>
+                          Editar
+                        </Button>
                         <Button variant="ghost" size="sm" onClick={() => toggleAtivoCandidato(c)}>
                           {c.ativo ? "Desativar" : "Reativar"}
                         </Button>
@@ -413,6 +457,237 @@ export default function AdfDetailPage() {
           </Card>
         )}
       </div>
+
+      {editandoAdf && adf && (
+        <EditarAdfDialog
+          adf={adf}
+          onClose={() => setEditandoAdf(false)}
+          onSaved={() => {
+            setEditandoAdf(false);
+            reload();
+          }}
+        />
+      )}
+      {editandoCand && (
+        <EditarCandidatoDialog
+          adfId={id}
+          candidato={editandoCand}
+          onClose={() => setEditandoCand(null)}
+          onSaved={() => {
+            setEditandoCand(null);
+            reload();
+          }}
+        />
+      )}
     </div>
+  );
+}
+
+function EditarAdfDialog({ adf, onClose, onSaved }: { adf: Adf; onClose: () => void; onSaved: () => void }) {
+  const [numero, setNumero] = useState(adf.numeroAdf);
+  const [associacaoId, setAssociacaoId] = useState(adf.associacaoId);
+  const [instrutorId, setInstrutorId] = useState(adf.instrutorId);
+  const [instrutorAuxId, setInstrutorAuxId] = useState(adf.instrutorAuxiliarId ?? "nenhum");
+  const [dataInicio, setDataInicio] = useState(adf.dataInicio.slice(0, 10));
+  const [dataTermino, setDataTermino] = useState(adf.dataTermino.slice(0, 10));
+  const [associacoes, setAssociacoes] = useState<Opcao[]>([]);
+  const [instrutores, setInstrutores] = useState<Opcao[]>([]);
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    api<Opcao[]>("/associacoes").then(setAssociacoes);
+    api<Opcao[]>("/instrutores?todos=1").then(setInstrutores);
+  }, []);
+
+  async function salvar() {
+    setSaving(true);
+    try {
+      await api(`/adfs/${adf.id}`, {
+        method: "PUT",
+        body: JSON.stringify({
+          numero_adf: numero,
+          associacao_id: associacaoId,
+          data_inicio: dataInicio,
+          data_termino: dataTermino,
+          instrutor_id: instrutorId,
+          instrutor_auxiliar_id: instrutorAuxId === "nenhum" ? null : instrutorAuxId,
+        }),
+      });
+      toast.success("ADF atualizada");
+      onSaved();
+    } catch (err) {
+      toast.error(err instanceof ApiClientError ? err.message : "Erro ao atualizar ADF");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <Dialog open onOpenChange={(v) => !v && onClose()}>
+      <DialogContent className="max-h-[85vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>Editar ADF</DialogTitle>
+        </DialogHeader>
+        <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-2">
+            <Label>Número da ADF</Label>
+            <Input value={numero} onChange={(e) => setNumero(e.target.value)} />
+          </div>
+          <div className="flex flex-col gap-2">
+            <Label>Associação</Label>
+            <Select value={associacaoId} onValueChange={(v) => v && setAssociacaoId(v)}>
+              <SelectTrigger className="w-full">
+                <SelectValue>{associacoes.find((a) => a.id === associacaoId)?.nome ?? adf.associacao_nome}</SelectValue>
+              </SelectTrigger>
+              <SelectContent>
+                {associacoes.map((a) => (
+                  <SelectItem key={a.id} value={a.id}>
+                    {a.nome}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="flex flex-col gap-2">
+              <Label>Início</Label>
+              <Input type="date" value={dataInicio} onChange={(e) => setDataInicio(e.target.value)} />
+            </div>
+            <div className="flex flex-col gap-2">
+              <Label>Término</Label>
+              <Input type="date" value={dataTermino} onChange={(e) => setDataTermino(e.target.value)} />
+            </div>
+          </div>
+          <div className="flex flex-col gap-2">
+            <Label>Instrutor responsável</Label>
+            <Select value={instrutorId} onValueChange={(v) => v && setInstrutorId(v)}>
+              <SelectTrigger className="w-full">
+                <SelectValue>{instrutores.find((i) => i.id === instrutorId)?.nome ?? adf.instrutor_nome}</SelectValue>
+              </SelectTrigger>
+              <SelectContent>
+                {instrutores.map((i) => (
+                  <SelectItem key={i.id} value={i.id}>
+                    {i.nome}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="flex flex-col gap-2">
+            <Label>Instrutor auxiliar</Label>
+            <Select value={instrutorAuxId} onValueChange={(v) => setInstrutorAuxId(v ?? "nenhum")}>
+              <SelectTrigger className="w-full">
+                <SelectValue>
+                  {instrutorAuxId === "nenhum" ? "Sem auxiliar" : (instrutores.find((i) => i.id === instrutorAuxId)?.nome ?? adf.instrutor_aux_nome)}
+                </SelectValue>
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="nenhum">Sem auxiliar</SelectItem>
+                {instrutores.map((i) => (
+                  <SelectItem key={i.id} value={i.id}>
+                    {i.nome}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={onClose} className="w-full sm:w-auto">
+            Cancelar
+          </Button>
+          <Button onClick={salvar} disabled={saving || !numero} className="w-full sm:w-auto">
+            {saving ? "Salvando..." : "Salvar alterações"}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function EditarCandidatoDialog({
+  adfId,
+  candidato,
+  onClose,
+  onSaved,
+}: {
+  adfId: string;
+  candidato: Candidato;
+  onClose: () => void;
+  onSaved: () => void;
+}) {
+  const [nome, setNome] = useState(candidato.candidatoNome);
+  const [registro, setRegistro] = useState(candidato.candidatoRegistroTmc);
+  const [email, setEmail] = useState(candidato.candidatoEmail ?? "");
+  const [nivel, setNivel] = useState(String(candidato.nivelIrata));
+  const [saving, setSaving] = useState(false);
+
+  async function salvar() {
+    setSaving(true);
+    try {
+      await api(`/adfs/${adfId}/candidatos/${candidato.id}`, {
+        method: "PUT",
+        body: JSON.stringify({
+          candidato_nome: nome,
+          candidato_registro_tmc: registro,
+          candidato_email: email || null,
+          nivel_irata: Number(nivel),
+        }),
+      });
+      toast.success("Candidato atualizado");
+      onSaved();
+    } catch (err) {
+      toast.error(err instanceof ApiClientError ? err.message : "Erro ao atualizar candidato");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <Dialog open onOpenChange={(v) => !v && onClose()}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Editar candidato</DialogTitle>
+        </DialogHeader>
+        <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-2">
+            <Label>Nome</Label>
+            <Input value={nome} onChange={(e) => setNome(e.target.value)} />
+          </div>
+          <div className="flex flex-col gap-2">
+            <Label>Registro TMC</Label>
+            <Input value={registro} onChange={(e) => setRegistro(e.target.value)} />
+          </div>
+          <div className="flex flex-col gap-2">
+            <Label>E-mail</Label>
+            <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
+          </div>
+          <div className="flex flex-col gap-2">
+            <Label>Nível IRATA</Label>
+            <Select value={nivel} onValueChange={(v) => setNivel(v ?? "1")} disabled={candidato.status === "finalizada"}>
+              <SelectTrigger className="w-full">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="1">Nível 1</SelectItem>
+                <SelectItem value="2">Nível 2</SelectItem>
+                <SelectItem value="3">Nível 3</SelectItem>
+              </SelectContent>
+            </Select>
+            {candidato.status === "finalizada" && (
+              <p className="text-xs text-muted-foreground">Nível bloqueado: avaliação já finalizada.</p>
+            )}
+          </div>
+        </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={onClose} className="w-full sm:w-auto">
+            Cancelar
+          </Button>
+          <Button onClick={salvar} disabled={saving || !nome || !registro} className="w-full sm:w-auto">
+            {saving ? "Salvando..." : "Salvar alterações"}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }

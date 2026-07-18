@@ -12,6 +12,11 @@ services:
       ADMIN_NOME: ${ADMIN_NOME:-Administrador Metha}
       ADMIN_EMAIL: ${ADMIN_EMAIL:-admin@methaoffshore.com.br}
       ADMIN_SENHA: ${ADMIN_SENHA}
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORT: ${SMTP_PORT:-465}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASS: ${SMTP_PASS:-}
+      SMTP_FROM: ${SMTP_FROM:-}
     volumes:
       - app_data:/app/data
     # Publicado somente em localhost: o nginx nativo do host faz o proxy reverso.

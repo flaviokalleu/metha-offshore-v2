@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { requireAuth } from "@/lib/auth";
+import { requireAuth, requireAdmin } from "@/lib/auth";
 import { withErrorHandling } from "@/lib/api-handler";
 
 export const GET = withErrorHandling(async (req, { params }: { params: Promise<{ id: string }> }) => {
@@ -45,4 +45,23 @@ export const PUT = withErrorHandling(async (req, { params }: { params: Promise<{
     },
   });
   return NextResponse.json(adf);
+});
+
+export const DELETE = withErrorHandling(async (req, { params }: { params: Promise<{ id: string }> }) => {
+  const user = requireAdmin(req);
+  const { id } = await params;
+
+  const adf = await prisma.adf.findUnique({ where: { id } });
+  if (!adf) return NextResponse.json({ error: "ADF não encontrada" }, { status: 404 });
+
+  await prisma.$transaction([
+    // audit_log não tem cascade — remove os registros da ADF antes
+    prisma.auditLog.deleteMany({ where: { adfId: id } }),
+    prisma.adf.delete({ where: { id } }),
+    prisma.auditLog.create({
+      data: { usuarioId: user.id, acao: "excluir_adf", justificativa: `ADF ${adf.numeroAdf} excluída` },
+    }),
+  ]);
+
+  return NextResponse.json({ message: "ADF excluída" });
 });
