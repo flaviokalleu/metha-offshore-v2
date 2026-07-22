@@ -2,17 +2,20 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, ClipboardList, Users, ShieldCheck, LogOut, Menu, X } from "lucide-react";
+import { LayoutDashboard, ClipboardList, Users, ShieldCheck, LogOut, Menu, X, FileSignature, FolderOpen } from "lucide-react";
 import { useState } from "react";
 import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 const NAV = [
-  { href: "/dashboard", label: "Início", icon: LayoutDashboard },
-  { href: "/adfs", label: "ADFs", icon: ClipboardList },
-  { href: "/admin/instrutores", label: "Instrutores", icon: Users, adminOnly: true },
+  { href: "/dashboard", label: "Início", icon: LayoutDashboard, bottom: true },
+  { href: "/adfs", label: "ADFs", icon: ClipboardList, bottom: true },
+  { href: "/termo", label: "Meu Termo", icon: FileSignature, bottom: true },
+  { href: "/admin/instrutores", label: "Instrutores", icon: Users, adminOnly: true, bottom: true },
   { href: "/admin/usuarios", label: "Usuários", icon: ShieldCheck, adminOnly: true },
+  { href: "/admin/termos", label: "Termos", icon: FileSignature, adminOnly: true },
+  { href: "/admin/documentos", label: "Documentos", icon: FolderOpen, adminOnly: true },
 ];
 
 export function NavShell({ children }: { children: React.ReactNode }) {
@@ -165,7 +168,7 @@ export function NavShell({ children }: { children: React.ReactNode }) {
         className="fixed inset-x-0 bottom-0 z-40 flex items-stretch bg-sidebar text-sidebar-foreground md:hidden print:hidden"
         style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
       >
-        {items.map((n) => (
+        {items.filter((n) => n.bottom).map((n) => (
           <Link
             key={n.href}
             href={n.href as any}

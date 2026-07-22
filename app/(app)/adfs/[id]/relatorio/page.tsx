@@ -41,8 +41,11 @@ type Relatorio = {
       disc_codigos: { codigo: string; descricao: string | null }[];
       disc_observacao: string | null;
     }[];
+    ocorrencias_presenca: { dia_semana: string; observacao: string }[];
   }[];
 };
+
+const DIA_LABEL: Record<string, string> = { segunda: "Segunda", terca: "Terça", quarta: "Quarta", quinta: "Quinta", sexta: "Sexta" };
 
 const RESULTADO_LABEL: Record<string, string> = {
   reprovado: "Reprovado",
@@ -162,6 +165,19 @@ export default function RelatorioAdfPage() {
                     ))}
                   </tbody>
                 </table>
+              </div>
+            )}
+
+            {c.ocorrencias_presenca.length > 0 && (
+              <div className="mt-3 rounded border border-red-700 p-2">
+                <p className="mb-1 text-xs font-bold uppercase text-red-700">Ocorrências durante a semana</p>
+                <ul className="flex flex-col gap-0.5 text-xs">
+                  {c.ocorrencias_presenca.map((o, i) => (
+                    <li key={i}>
+                      <strong>{DIA_LABEL[o.dia_semana] ?? o.dia_semana}:</strong> {o.observacao}
+                    </li>
+                  ))}
+                </ul>
               </div>
             )}
 

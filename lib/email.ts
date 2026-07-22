@@ -10,7 +10,17 @@ export function emailConfigurado() {
   return Boolean(SMTP_HOST && SMTP_USER && SMTP_PASS);
 }
 
-export async function enviarEmail({ para, assunto, html }: { para: string; assunto: string; html: string }) {
+export async function enviarEmail({
+  para,
+  assunto,
+  html,
+  anexos,
+}: {
+  para: string;
+  assunto: string;
+  html: string;
+  anexos?: { filename: string; path: string }[];
+}) {
   if (!emailConfigurado()) {
     throw new Error("Servidor de e-mail não configurado. Defina SMTP_HOST, SMTP_USER e SMTP_PASS no .env");
   }
@@ -20,5 +30,5 @@ export async function enviarEmail({ para, assunto, html }: { para: string; assun
     secure: SMTP_PORT === 465,
     auth: { user: SMTP_USER, pass: SMTP_PASS },
   });
-  await transporter.sendMail({ from: `Metha Offshore <${SMTP_FROM}>`, to: para, subject: assunto, html });
+  await transporter.sendMail({ from: `Metha Offshore <${SMTP_FROM}>`, to: para, subject: assunto, html, attachments: anexos });
 }

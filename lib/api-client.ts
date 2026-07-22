@@ -48,7 +48,7 @@ export class ApiClientError extends Error {
 export async function api<T = unknown>(path: string, options: RequestInit = {}, retry = true): Promise<T> {
   const token = getAccessToken();
   const headers = new Headers(options.headers);
-  headers.set("Content-Type", "application/json");
+  if (!(options.body instanceof FormData)) headers.set("Content-Type", "application/json");
   if (token) headers.set("Authorization", `Bearer ${token}`);
 
   const res = await fetch(`/api${path}`, { ...options, headers });

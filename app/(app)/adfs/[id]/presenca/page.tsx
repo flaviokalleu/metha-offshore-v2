@@ -4,12 +4,13 @@ import { useEffect, useMemo, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import { toast } from "sonner";
-import { FileText, PenLine } from "lucide-react";
+import { FileText, MessageSquareWarning, PenLine } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
 import { SignaturePad } from "@/components/signature-pad";
 import { BackButton } from "@/components/back-button";
 import { api, ApiClientError } from "@/lib/api-client";
@@ -20,6 +21,7 @@ type Presenca = {
   candidato_nome: string;
   diaSemana: string;
   status: string;
+  observacao: string | null;
   assinatura: string | null;
 };
 
@@ -33,6 +35,8 @@ export default function PresencaPage() {
   const [saving, setSaving] = useState(false);
   const [rubricando, setRubricando] = useState<{ candidatoId: string; nome: string; dia: string } | null>(null);
   const [rubricaTemp, setRubricaTemp] = useState<string | null>(null);
+  const [anotando, setAnotando] = useState<{ candidatoId: string; nome: string; dia: string } | null>(null);
+  const [anotacaoTemp, setAnotacaoTemp] = useState("");
 
   function reload() {
     api<Presenca[]>(`/adfs/${id}/presencas`).then(setRows);
@@ -58,7 +62,12 @@ export default function PresencaPage() {
       await api(`/adfs/${id}/presencas`, {
         method: "PUT",
         body: JSON.stringify({
-          presencas: rows.map((r) => ({ candidato_id: r.candidatoId, dia_semana: r.diaSemana, status: r.status })),
+          presencas: rows.map((r) => ({
+            candidato_id: r.candidatoId,
+            dia_semana: r.diaSemana,
+            status: r.status,
+            observacao: r.observacao,
+          })),
         }),
       });
       toast.success("Presença salva");
@@ -93,6 +102,49 @@ export default function PresencaPage() {
     } catch (err) {
       toast.error(err instanceof ApiClientError ? err.message : "Erro ao salvar rubrica");
     }
+  }
+
+  async function confirmarAnotacao() {
+    if (!anotando) return;
+    try {
+      await api(`/adfs/${id}/presencas`, {
+        method: "PUT",
+        body: JSON.stringify({
+          presencas: [
+            {
+              candidato_id: anotando.candidatoId,
+              dia_semana: anotando.dia,
+              status: rows.find((r) => r.candidatoId === anotando.candidatoId && r.diaSemana === anotando.dia)?.status ?? "pendente",
+              observacao: anotacaoTemp.trim() || null,
+            },
+          ],
+        }),
+      });
+      toast.success(`Observação de ${anotando.nome} (${DIA_LABEL[anotando.dia]}) salva`);
+      setAnotando(null);
+      setAnotacaoTemp("");
+      reload();
+    } catch (err) {
+      toast.error(err instanceof ApiClientError ? err.message : "Erro ao salvar observação");
+    }
+  }
+
+  function AnotacaoCell({ candidatoId, nome, dia, p }: { candidatoId: string; nome: string; dia: string; p?: Presenca }) {
+    const temNota = Boolean(p?.observacao);
+    return (
+      <button
+        onClick={() => {
+          setAnotando({ candidatoId, nome, dia });
+          setAnotacaoTemp(p?.observacao ?? "");
+        }}
+        className={`flex w-full items-center gap-1.5 rounded-md border px-2 py-1.5 text-left text-xs ${
+          temNota ? "border-warning/40 bg-warning/10 text-warning" : "text-muted-foreground"
+        }`}
+      >
+        <MessageSquareWarning className={`size-3.5 shrink-0 ${temNota ? "text-warning" : ""}`} />
+        <span className="truncate">{p?.observacao || "Observação"}</span>
+      </button>
+    );
   }
 
   function RubricaCell({ candidatoId, nome, dia, p }: { candidatoId: string; nome: string; dia: string; p?: Presenca }) {
@@ -171,6 +223,7 @@ export default function PresencaPage() {
                     </Select>
                     <RubricaCell candidatoId={candidatoId} nome={c.nome} dia={d} p={c.dias[d]} />
                   </div>
+                  <AnotacaoCell candidatoId={candidatoId} nome={c.nome} dia={d} p={c.dias[d]} />
                 </div>
               ))}
             </CardContent>
@@ -200,7 +253,7 @@ export default function PresencaPage() {
                     <TableCell className="font-medium">{c.nome}</TableCell>
                     {DIAS.map((d) => (
                       <TableCell key={d}>
-                        <div className="flex w-36 flex-col gap-1.5">
+                        <div className="flex w-40 flex-col gap-1.5">
                           <Select
                             value={c.dias[d]?.status ?? "pendente"}
                             onValueChange={(v) => setStatus(candidatoId, d, v ?? "pendente")}
@@ -217,6 +270,7 @@ export default function PresencaPage() {
                             </SelectContent>
                           </Select>
                           <RubricaCell candidatoId={candidatoId} nome={c.nome} dia={d} p={c.dias[d]} />
+                          <AnotacaoCell candidatoId={candidatoId} nome={c.nome} dia={d} p={c.dias[d]} />
                         </div>
                       </TableCell>
                     ))}
@@ -249,6 +303,33 @@ export default function PresencaPage() {
               </Button>
               <Button onClick={confirmarRubrica} disabled={!rubricaTemp} className="w-full sm:w-auto">
                 Confirmar rubrica
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      )}
+
+      {anotando && (
+        <Dialog open onOpenChange={(v) => !v && setAnotando(null)}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>
+                Observação — {anotando.nome} ({DIA_LABEL[anotando.dia]})
+              </DialogTitle>
+            </DialogHeader>
+            <Textarea
+              placeholder="Ex: chegou alcoolizado, saiu mais cedo sem avisar, recusou atividade, etc."
+              value={anotacaoTemp}
+              onChange={(e) => setAnotacaoTemp(e.target.value)}
+              rows={4}
+              autoFocus
+            />
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setAnotando(null)} className="w-full sm:w-auto">
+                Cancelar
+              </Button>
+              <Button onClick={confirmarAnotacao} className="w-full sm:w-auto">
+                Salvar observação
               </Button>
             </DialogFooter>
           </DialogContent>

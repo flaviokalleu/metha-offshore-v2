@@ -23,6 +23,7 @@ type Presenca = {
   nivel_irata: number;
   diaSemana: string;
   status: string;
+  observacao: string | null;
   assinatura: string | null;
 };
 
@@ -108,6 +109,11 @@ export default function RelatorioPresencaPage() {
                         ) : (
                           <span className="mt-1 block text-[10px] text-gray-500">sem rubrica</span>
                         )}
+                        {p?.observacao && (
+                          <span className="mt-1 block max-w-24 text-[9px] font-medium leading-tight text-red-700">
+                            {p.observacao}
+                          </span>
+                        )}
                       </td>
                     );
                   })}
@@ -116,6 +122,24 @@ export default function RelatorioPresencaPage() {
             </tbody>
           </table>
         </div>
+
+        {rows.some((r) => r.observacao) && (
+          <div className="mt-5 break-inside-avoid">
+            <h2 className="mb-1.5 border-b border-black pb-1 text-sm font-bold uppercase">Ocorrências registradas</h2>
+            <ul className="flex flex-col gap-1 text-xs">
+              {rows
+                .filter((r) => r.observacao)
+                .map((r, i) => (
+                  <li key={i}>
+                    <strong>
+                      {r.candidato_nome} — {DIA_LABEL[r.diaSemana]}:
+                    </strong>{" "}
+                    {r.observacao}
+                  </li>
+                ))}
+            </ul>
+          </div>
+        )}
 
         <p className="mt-6 text-right text-xs text-gray-600">
           Emitido em {new Date().toLocaleDateString("pt-BR")} às {new Date().toLocaleTimeString("pt-BR")} — Sistema Metha Offshore

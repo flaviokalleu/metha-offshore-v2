@@ -19,6 +19,7 @@ export const GET = withErrorHandling(async (req, { params }: { params: Promise<{
       orderBy: { candidatoNome: "asc" },
       include: {
         avaliacoes: { include: { manobra: true } },
+        presencas: { where: { observacao: { not: null } }, orderBy: { diaSemana: "asc" } },
       },
     }),
     prisma.discrepanciaCatalogo.findMany(),
@@ -61,6 +62,7 @@ export const GET = withErrorHandling(async (req, { params }: { params: Promise<{
       assinatura_instrutor_em: c.assinaturaInstrutorEm,
       finalizada_em: c.finalizadaEm,
       avaliacoes,
+      ocorrencias_presenca: c.presencas.map((p) => ({ dia_semana: p.diaSemana, observacao: p.observacao })),
     };
   });
 

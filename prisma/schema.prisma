@@ -30,8 +30,35 @@ model Instrutor {
   usuarios       Usuario[]
   adfsComoTitular Adf[]   @relation("AdfInstrutor")
   adfsComoAuxiliar Adf[]  @relation("AdfInstrutorAuxiliar")
+  termo          TermoInstrutor?
 
   @@map("instrutores")
+}
+
+model TermoInstrutor {
+  id             String    @id @default(uuid())
+  instrutorId    String    @unique
+  instrutor      Instrutor @relation(fields: [instrutorId], references: [id], onDelete: Cascade)
+  cidade         String    @default("Rio de Janeiro")
+  assinaturaImg  String?
+  assinadoEm     DateTime?
+  enviadoEm      DateTime?
+  atualizadoEm   DateTime  @updatedAt
+  criadoEm       DateTime  @default(now())
+
+  @@map("termos_instrutores")
+}
+
+model Documento {
+  id           String   @id @default(uuid())
+  nome         String
+  arquivoNome  String   // nome do arquivo em disco (uuid + extensão)
+  mimeType     String
+  tamanho      Int
+  criadoPor    String
+  criadoEm     DateTime @default(now())
+
+  @@map("documentos")
 }
 
 model Usuario {
