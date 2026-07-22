@@ -73,7 +73,7 @@ export default function MeuTermoPage() {
   return (
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between gap-2">
-        <h1 className="text-xl font-semibold sm:text-2xl">Termo de Ciência</h1>
+        <h1 className="text-xl font-semibold sm:text-2xl">Indução de Instrutores</h1>
         {termo.assinado_em && <Badge variant="success">Assinado</Badge>}
       </div>
 

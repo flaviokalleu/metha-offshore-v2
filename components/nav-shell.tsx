@@ -11,10 +11,10 @@ import { cn } from "@/lib/utils";
 const NAV = [
   { href: "/dashboard", label: "Início", icon: LayoutDashboard, bottom: true },
   { href: "/adfs", label: "ADFs", icon: ClipboardList, bottom: true },
-  { href: "/termo", label: "Meu Termo", icon: FileSignature, bottom: true },
+  { href: "/termo", label: "Indução de Instrutores", icon: FileSignature, bottom: true },
   { href: "/admin/instrutores", label: "Instrutores", icon: Users, adminOnly: true, bottom: true },
   { href: "/admin/usuarios", label: "Usuários", icon: ShieldCheck, adminOnly: true },
-  { href: "/admin/termos", label: "Termos", icon: FileSignature, adminOnly: true },
+  { href: "/admin/termos", label: "Indução de Instrutores", icon: FileSignature, adminOnly: true },
   { href: "/admin/documentos", label: "Documentos", icon: FolderOpen, adminOnly: true },
 ];
 

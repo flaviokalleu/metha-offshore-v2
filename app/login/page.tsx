@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { Suspense, useState, type FormEvent } from "react";
+import { useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,7 +11,16 @@ import { useAuth } from "@/lib/auth-context";
 import { ApiClientError } from "@/lib/api-client";
 
 export default function LoginPage() {
+  return (
+    <Suspense>
+      <LoginForm />
+    </Suspense>
+  );
+}
+
+function LoginForm() {
   const { login } = useAuth();
+  const searchParams = useSearchParams();
   const [loginValue, setLoginValue] = useState("");
   const [senha, setSenha] = useState("");
   const [loading, setLoading] = useState(false);
@@ -19,7 +29,7 @@ export default function LoginPage() {
     e.preventDefault();
     setLoading(true);
     try {
-      await login(loginValue, senha);
+      await login(loginValue, senha, searchParams.get("next") ?? undefined);
     } catch (err) {
       const message = err instanceof ApiClientError ? err.message : "Erro ao entrar";
       toast.error(message);

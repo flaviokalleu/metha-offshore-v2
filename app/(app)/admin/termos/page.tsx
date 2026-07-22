@@ -74,7 +74,7 @@ export default function AdminTermosPage() {
     <div className="flex flex-col gap-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-xl font-semibold sm:text-2xl">Termos de Ciência</h1>
+          <h1 className="text-xl font-semibold sm:text-2xl">Indução de Instrutores</h1>
           <p className="text-sm text-muted-foreground">Recebimento de documentos e indução de instrutores</p>
         </div>
         <Button onClick={enviarSelecionados} disabled={enviando || selecionados.size === 0} className="gap-1.5">

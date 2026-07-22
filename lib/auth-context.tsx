@@ -15,7 +15,7 @@ type User = {
 type AuthContextValue = {
   user: User | null;
   loading: boolean;
-  login: (login: string, senha: string) => Promise<void>;
+  login: (login: string, senha: string, redirectTo?: string) => Promise<void>;
   logout: () => void;
 };
 
@@ -38,14 +38,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       .finally(() => setLoading(false));
   }, []);
 
-  async function login(login: string, senha: string) {
+  async function login(login: string, senha: string, redirectTo?: string) {
     const data = await api<{ access_token: string; refresh_token: string; user: User }>("/auth/login", {
       method: "POST",
       body: JSON.stringify({ login, senha }),
     });
     setTokens(data.access_token, data.refresh_token);
     setUser(data.user);
-    router.push("/dashboard");
+    router.push(redirectTo && redirectTo.startsWith("/") ? redirectTo : "/dashboard");
   }
 
   function logout() {

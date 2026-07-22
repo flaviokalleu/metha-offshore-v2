@@ -36,16 +36,16 @@ export const POST = withErrorHandling(async (req) => {
       <div style="font-family:Arial,Helvetica,sans-serif;max-width:600px;margin:0 auto;color:#111">
         <h2 style="color:#0E1B26">Metha Offshore</h2>
         <p>Olá, ${instr.nome}.</p>
-        <p>Foi enviado a você o <strong>Termo de Ciência e Recebimento de Documentos</strong> (TACs, ICOP, Análise de risco do CT,
+        <p>Foi enviado a você o <strong>Indução de Instrutores</strong> (TACs, ICOP, Análise de risco do CT,
         Boletins de Segurança, Folhas de Tópicos e demais materiais de indução de instrutores).</p>
-        <p>Acesse o sistema Metha Offshore, faça login e vá em <strong>Meu Termo</strong> para ler e assinar eletronicamente.</p>
-        <p><a href="${siteUrl}/login" style="display:inline-block;background:#FF7420;color:#fff;padding:10px 18px;border-radius:6px;text-decoration:none;font-weight:bold">Acessar o sistema</a></p>
+        <p>Acesse o sistema Metha Offshore, faça login e você será levado direto para <strong>Indução de Instrutores</strong> para ler e assinar eletronicamente.</p>
+        <p><a href="${siteUrl}/login?next=%2Ftermo" style="display:inline-block;background:#FF7420;color:#fff;padding:10px 18px;border-radius:6px;text-decoration:none;font-weight:bold">Acessar e assinar</a></p>
         <hr style="border:none;border-top:1px solid #e2e8f0;margin:24px 0"/>
         <p style="font-size:12px;color:#64748b">E-mail enviado automaticamente pelo sistema Metha Offshore.</p>
       </div>`;
 
     try {
-      await enviarEmail({ para: instr.email, assunto: "Metha Offshore — Termo de Ciência para assinatura", html });
+      await enviarEmail({ para: instr.email, assunto: "Metha Offshore — Indução de Instrutores para assinatura", html });
       enviados.push(instr.nome);
     } catch (e) {
       console.error(`Falha ao enviar termo para ${instr.email}`, e);
