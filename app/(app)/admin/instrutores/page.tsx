@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { Plus } from "lucide-react";
+import { Plus, Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -36,6 +36,14 @@ export default function AdminInstrutoresPage() {
   const [email, setEmail] = useState("");
   const [telefone, setTelefone] = useState("");
 
+  // Edição
+  const [editando, setEditando] = useState<Instrutor | null>(null);
+  const [eNome, setENome] = useState("");
+  const [eRegistro, setERegistro] = useState("");
+  const [eNivel, setENivel] = useState("1");
+  const [eEmail, setEEmail] = useState("");
+  const [eTelefone, setETelefone] = useState("");
+
   function reload() {
     api<Instrutor[]>("/instrutores?todos=1").then(setRows);
   }
@@ -53,12 +61,46 @@ export default function AdminInstrutoresPage() {
       toast.success("Instrutor cadastrado");
       setNome("");
       setRegistro("");
+      setNivel("1");
       setEmail("");
       setTelefone("");
       setOpen(false);
       reload();
     } catch (err) {
       toast.error(err instanceof ApiClientError ? err.message : "Erro ao cadastrar instrutor");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  function abrirEdicao(i: Instrutor) {
+    setEditando(i);
+    setENome(i.nome);
+    setERegistro(i.registroIrata);
+    setENivel(String(i.nivel));
+    setEEmail(i.email ?? "");
+    setETelefone(i.telefone ?? "");
+  }
+
+  async function salvarEdicao() {
+    if (!editando) return;
+    setSaving(true);
+    try {
+      await api(`/instrutores/${editando.id}`, {
+        method: "PUT",
+        body: JSON.stringify({
+          nome: eNome,
+          registro_irata: eRegistro,
+          nivel: Number(eNivel),
+          email: eEmail || null,
+          telefone: eTelefone || null,
+        }),
+      });
+      toast.success("Instrutor atualizado");
+      setEditando(null);
+      reload();
+    } catch (err) {
+      toast.error(err instanceof ApiClientError ? err.message : "Erro ao atualizar instrutor");
     } finally {
       setSaving(false);
     }
@@ -153,9 +195,14 @@ export default function AdminInstrutoresPage() {
               </div>
               <div className="flex flex-col items-end gap-2">
                 <Badge variant={i.ativo ? "default" : "secondary"}>{i.ativo ? "ativo" : "inativo"}</Badge>
-                <Button variant="outline" size="sm" onClick={() => toggleAtivo(i)}>
-                  {i.ativo ? "Desativar" : "Ativar"}
-                </Button>
+                <div className="flex gap-2">
+                  <Button variant="outline" size="sm" onClick={() => abrirEdicao(i)}>
+                    Editar
+                  </Button>
+                  <Button variant="outline" size="sm" onClick={() => toggleAtivo(i)}>
+                    {i.ativo ? "Desativar" : "Ativar"}
+                  </Button>
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -191,7 +238,11 @@ export default function AdminInstrutoresPage() {
                   <TableCell>
                     <Badge variant={i.ativo ? "default" : "secondary"}>{i.ativo ? "ativo" : "inativo"}</Badge>
                   </TableCell>
-                  <TableCell className="text-right">
+                  <TableCell className="flex justify-end gap-2 text-right">
+                    <Button variant="outline" size="sm" className="gap-1.5" onClick={() => abrirEdicao(i)}>
+                      <Pencil className="size-3.5" />
+                      Editar
+                    </Button>
                     <Button variant="outline" size="sm" onClick={() => toggleAtivo(i)}>
                       {i.ativo ? "Desativar" : "Ativar"}
                     </Button>
@@ -202,6 +253,51 @@ export default function AdminInstrutoresPage() {
           </Table>
         </CardContent>
       </Card>
+
+      {/* Dialog de edição */}
+      <Dialog open={editando !== null} onOpenChange={(o) => !o && setEditando(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Editar instrutor</DialogTitle>
+          </DialogHeader>
+          <div className="flex flex-col gap-4">
+            <div className="flex flex-col gap-2">
+              <Label>Nome</Label>
+              <Input value={eNome} onChange={(e) => setENome(e.target.value)} />
+            </div>
+            <div className="flex flex-col gap-2">
+              <Label>Registro IRATA</Label>
+              <Input value={eRegistro} onChange={(e) => setERegistro(e.target.value)} />
+            </div>
+            <div className="flex flex-col gap-2">
+              <Label>Nível</Label>
+              <Select value={eNivel} onValueChange={(v) => setENivel(v ?? "1")}>
+                <SelectTrigger className="w-full">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="1">Nível 1</SelectItem>
+                  <SelectItem value="2">Nível 2</SelectItem>
+                  <SelectItem value="3">Nível 3</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex flex-col gap-2">
+              <Label>E-mail</Label>
+              <Input value={eEmail} onChange={(e) => setEEmail(e.target.value)} />
+            </div>
+            <div className="flex flex-col gap-2">
+              <Label>Telefone</Label>
+              <Input value={eTelefone} onChange={(e) => setETelefone(e.target.value)} />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button onClick={salvarEdicao} disabled={saving || !eNome || !eRegistro} className="w-full sm:w-auto">
+              {saving ? "Salvando..." : "Salvar"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

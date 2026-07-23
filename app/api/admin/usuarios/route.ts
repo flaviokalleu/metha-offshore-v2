@@ -8,7 +8,7 @@ export const GET = withErrorHandling(async (req) => {
   requireAdmin(req);
   const rows = await prisma.usuario.findMany({
     orderBy: { nome: "asc" },
-    select: { id: true, nome: true, email: true, perfil: true, registroIrata: true, status: true, criadoEm: true, ultimoLogin: true },
+    select: { id: true, nome: true, email: true, perfil: true, registroIrata: true, instrutorId: true, status: true, criadoEm: true, ultimoLogin: true },
   });
   return NextResponse.json(rows);
 });
