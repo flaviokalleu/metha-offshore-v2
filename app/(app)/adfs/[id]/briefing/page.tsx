@@ -11,7 +11,8 @@ import { Badge } from "@/components/ui/badge";
 import { SignaturePad } from "@/components/signature-pad";
 import { BackButton } from "@/components/back-button";
 import { api, ApiClientError } from "@/lib/api-client";
-import { Mail } from "lucide-react";
+import Link from "next/link";
+import { Mail, Printer } from "lucide-react";
 
 const ITENS = [
   "Objetivo e cronograma da ADF",
@@ -131,10 +132,22 @@ export default function BriefingPage() {
 
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h1 className="text-xl font-semibold sm:text-2xl">Briefing</h1>
-        <Button variant="outline" size="sm" onClick={enviarPorEmail} disabled={enviandoEmail} className="gap-1.5">
-          <Mail className="size-4" />
-          {enviandoEmail ? "Enviando..." : "Enviar por e-mail"}
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            nativeButton={false}
+            render={<Link href={`/adfs/${id}/briefing/relatorio` as any} />}
+            className="gap-1.5"
+          >
+            <Printer className="size-4" />
+            Relatório / PDF
+          </Button>
+          <Button variant="outline" size="sm" onClick={enviarPorEmail} disabled={enviandoEmail} className="gap-1.5">
+            <Mail className="size-4" />
+            {enviandoEmail ? "Enviando..." : "Enviar por e-mail"}
+          </Button>
+        </div>
       </div>
 
       <Card>

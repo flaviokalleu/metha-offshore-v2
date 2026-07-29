@@ -4,10 +4,11 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { toast } from "sonner";
-import { ChevronRight, ClipboardCheck, FileText, FileWarning, Lock, Pencil, Plus, Trash2, UserCheck, Users2, UserX } from "lucide-react";
+import { ChevronRight, ClipboardCheck, FileText, FileWarning, Lock, LockOpen, Pencil, Plus, Trash2, UserCheck, Users2, UserX } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -105,6 +106,28 @@ export default function AdfDetailPage() {
   }
 
   const [fechando, setFechando] = useState(false);
+  const [reabrindo, setReabrindo] = useState(false);
+  const [reabrirOpen, setReabrirOpen] = useState(false);
+  const [justificativa, setJustificativa] = useState("");
+
+  async function reabrirAdf() {
+    if (!justificativa.trim()) {
+      toast.error("Informe a justificativa da reabertura");
+      return;
+    }
+    setReabrindo(true);
+    try {
+      await api(`/adfs/${id}/reabrir`, { method: "POST", body: JSON.stringify({ justificativa }) });
+      toast.success("ADF reaberta");
+      setReabrirOpen(false);
+      setJustificativa("");
+      reload();
+    } catch (err) {
+      toast.error(err instanceof ApiClientError ? err.message : "Erro ao reabrir ADF");
+    } finally {
+      setReabrindo(false);
+    }
+  }
 
   async function toggleAtivaAdf() {
     if (!adf) return;
@@ -253,10 +276,26 @@ export default function AdfDetailPage() {
           <FileText className="size-4" />
           Relatório da ADF
         </Button>
+        <Button
+          variant="outline"
+          size="sm"
+          nativeButton={false}
+          render={<Link href={`/adfs/${id}/briefing/relatorio` as any} />}
+          className="gap-1.5"
+        >
+          <ClipboardCheck className="size-4" />
+          Relatório do Briefing
+        </Button>
         {adf.status !== "finalizada" && (
           <Button variant="destructive" size="sm" onClick={fecharAdf} disabled={fechando} className="gap-1.5">
             <Lock className="size-4" />
             {fechando ? "Fechando..." : "Fechar ADF"}
+          </Button>
+        )}
+        {adf.status === "finalizada" && user?.perfil === "admin" && (
+          <Button variant="outline" size="sm" onClick={() => setReabrirOpen(true)} className="gap-1.5">
+            <LockOpen className="size-4" />
+            Reabrir ADF
           </Button>
         )}
         <Button variant="outline" size="sm" onClick={toggleAtivaAdf}>
@@ -457,6 +496,35 @@ export default function AdfDetailPage() {
           </Card>
         )}
       </div>
+
+      <Dialog open={reabrirOpen} onOpenChange={(v) => { if (!v) { setReabrirOpen(false); setJustificativa(""); } }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Reabrir ADF {adf.numeroAdf}</DialogTitle>
+          </DialogHeader>
+          <div className="flex flex-col gap-3">
+            <p className="text-sm text-muted-foreground">
+              A reabertura volta a permitir alterações em avaliações, presenças e briefing. A ação fica registrada na auditoria.
+            </p>
+            <div className="flex flex-col gap-2">
+              <Label>Justificativa</Label>
+              <Textarea
+                placeholder="Descreva o motivo da reabertura"
+                value={justificativa}
+                onChange={(e) => setJustificativa(e.target.value)}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => { setReabrirOpen(false); setJustificativa(""); }} className="w-full sm:w-auto">
+              Cancelar
+            </Button>
+            <Button onClick={reabrirAdf} disabled={reabrindo || !justificativa.trim()} className="w-full sm:w-auto">
+              {reabrindo ? "Reabrindo..." : "Confirmar reabertura"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {editandoAdf && adf && (
         <EditarAdfDialog
