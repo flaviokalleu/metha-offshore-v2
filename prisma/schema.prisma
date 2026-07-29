@@ -110,6 +110,8 @@ model Adf {
   instrutorAuxiliar    Instrutor? @relation("AdfInstrutorAuxiliar", fields: [instrutorAuxiliarId], references: [id])
   status               String   @default("aberta") // aberta | finalizada | reaberta
   ativa                Boolean  @default(true) // false = desativada (arquivada, some das listas padrão)
+  presencaAssinaturaInstrutor    String?   // assinatura do instrutor na folha de presença
+  presencaAssinaturaInstrutorEm  DateTime?
   criadoPor            String
   criadoPorUsuario     Usuario  @relation("AdfCriadoPor", fields: [criadoPor], references: [id])
   criadoEm             DateTime @default(now())

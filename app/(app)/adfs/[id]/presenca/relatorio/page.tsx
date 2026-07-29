@@ -15,6 +15,7 @@ type Adf = {
   instrutor_aux_nome: string | null;
   dataInicio: string;
   dataTermino: string;
+  presencaAssinaturaInstrutor: string | null;
 };
 
 type Presenca = {
@@ -140,6 +141,18 @@ export default function RelatorioPresencaPage() {
             </ul>
           </div>
         )}
+
+        <div className="mt-10 break-inside-avoid">
+          {adf.presencaAssinaturaInstrutor ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={adf.presencaAssinaturaInstrutor} alt="Assinatura do instrutor" className="h-16 object-contain" />
+          ) : (
+            <div className="h-16" />
+          )}
+          <p className="max-w-xs border-t border-black pt-1 text-xs font-medium">
+            {adf.instrutor_nome} ({adf.instrutor_registro}) — Instrutor responsável
+          </p>
+        </div>
 
         <p className="mt-6 text-right text-xs text-gray-600">
           Emitido em {new Date().toLocaleDateString("pt-BR")} às {new Date().toLocaleTimeString("pt-BR")} — Sistema Metha Offshore

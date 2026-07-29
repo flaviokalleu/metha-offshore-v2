@@ -37,9 +37,13 @@ export default function PresencaPage() {
   const [rubricaTemp, setRubricaTemp] = useState<string | null>(null);
   const [anotando, setAnotando] = useState<{ candidatoId: string; nome: string; dia: string } | null>(null);
   const [anotacaoTemp, setAnotacaoTemp] = useState("");
+  const [assinaturaInstrutor, setAssinaturaInstrutor] = useState<string | null>(null);
 
   function reload() {
     api<Presenca[]>(`/adfs/${id}/presencas`).then(setRows);
+    api<{ presencaAssinaturaInstrutor: string | null }>(`/adfs/${id}`).then((a) =>
+      setAssinaturaInstrutor(a.presencaAssinaturaInstrutor ?? null)
+    );
   }
   useEffect(reload, [id]);
 
@@ -68,6 +72,7 @@ export default function PresencaPage() {
             status: r.status,
             observacao: r.observacao,
           })),
+          instrutor_assinatura: assinaturaInstrutor || undefined,
         }),
       });
       toast.success("Presença salva");
@@ -278,6 +283,20 @@ export default function PresencaPage() {
                 ))}
               </TableBody>
             </Table>
+          </CardContent>
+        </Card>
+      )}
+
+      {porCandidato.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">Assinatura do instrutor</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="mb-2 text-sm text-muted-foreground">
+              Assinatura do instrutor responsável ao final da folha de presença.
+            </p>
+            <SignaturePad value={assinaturaInstrutor} onChange={setAssinaturaInstrutor} />
           </CardContent>
         </Card>
       )}

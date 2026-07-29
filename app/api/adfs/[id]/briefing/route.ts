@@ -9,6 +9,10 @@ function serialize(b: Awaited<ReturnType<typeof prisma.briefing.findUnique>>) {
     ...b,
     itens_confirmados: JSON.parse(b.itensConfirmados),
     assinaturas_candidatos: JSON.parse(b.assinaturasCandidatos),
+    temas_abordados: b.temasAbordados,
+    observacoes: b.observacoes,
+    instrutor_assinatura: b.instrutorAssinatura,
+    instrutor_assinado_em: b.instrutorAssinadoEm,
   };
 }
 

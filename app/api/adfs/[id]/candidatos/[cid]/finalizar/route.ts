@@ -20,7 +20,8 @@ export const POST = withErrorHandling(async (req, { params }: { params: Promise<
   const candidato = await prisma.adfCandidato.findFirst({ where: { id: cid, adfId } });
   if (!candidato) return NextResponse.json({ error: "Candidato não encontrado" }, { status: 404 });
 
-  const aprovado = candidato.qtdDiscGraves === 0 && candidato.qtdDiscLeves < 3;
+  // Reprova automaticamente com 1+ discrepância grave ou 3+ leves; ou quando o instrutor marca "reprovado".
+  const aprovado = candidato.qtdDiscGraves === 0 && candidato.qtdDiscLeves < 3 && resultado !== "reprovado";
   if (!aprovado) resultado = "reprovado";
 
   const now = new Date();

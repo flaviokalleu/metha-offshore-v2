@@ -33,6 +33,7 @@ const RESULTADOS = [
   { value: "bom", label: "Bom" },
   { value: "muito_bom", label: "Muito bom" },
   { value: "excelente", label: "Excelente" },
+  { value: "reprovado", label: "Reprovado" },
 ];
 
 export default function AvaliacaoPage() {
@@ -114,7 +115,7 @@ export default function AvaliacaoPage() {
       const res = await api<{ aprovado: boolean; resultado: string }>(`/adfs/${id}/candidatos/${cid}/finalizar`, {
         method: "POST",
         body: JSON.stringify({
-          resultado,
+          resultado: reprovaAutomaticamente ? "reprovado" : resultado,
           assinatura_candidato: assinaturaCandidato,
           assinatura_instrutor: assinaturaInstrutor,
         }),
@@ -138,9 +139,14 @@ export default function AvaliacaoPage() {
       </div>
 
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <div className="flex gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <Badge variant={totalLeves > 0 ? "warning" : "outline"}>{totalLeves} leve(s)</Badge>
           <Badge variant={totalGraves > 0 ? "destructive" : "outline"}>{totalGraves} grave(s)</Badge>
+          {reprovaAutomaticamente && (
+            <Badge variant="destructive" className="uppercase">
+              Reprovado
+            </Badge>
+          )}
         </div>
       </div>
 
@@ -195,25 +201,37 @@ export default function AvaliacaoPage() {
           <CardTitle className="text-base">Finalizar candidato</CardTitle>
         </CardHeader>
         <CardContent className="flex flex-col gap-4">
-          {reprovaAutomaticamente && (
-            <p className="text-sm font-medium text-destructive">
-              Este candidato será marcado como reprovado automaticamente (regra: 0 graves e menos de 3 leves para aprovação).
-            </p>
+          {reprovaAutomaticamente ? (
+            <div className="flex flex-col gap-2">
+              <p className="text-sm font-medium text-destructive">
+                {totalGraves > 0
+                  ? "Reprovação automática: o candidato recebeu discrepância grave."
+                  : "Reprovação automática: o candidato recebeu 3 ou mais discrepâncias leves."}
+              </p>
+              <div className="flex items-center gap-2 rounded-md border border-destructive bg-destructive/10 px-3 py-2 sm:max-w-xs">
+                <span className="text-sm font-medium">Resultado:</span>
+                <Badge variant="destructive" className="uppercase">
+                  Reprovado
+                </Badge>
+              </div>
+            </div>
+          ) : (
+            <div className="flex flex-col gap-2 sm:max-w-xs">
+              <span className="text-sm font-medium">Resultado</span>
+              <Select value={resultado} onValueChange={(v) => setResultado(v ?? "satisfatorio")}>
+                <SelectTrigger className="w-full">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {RESULTADOS.map((r) => (
+                    <SelectItem key={r.value} value={r.value}>
+                      {r.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           )}
-          <div className="flex flex-col gap-2 sm:max-w-xs">
-            <Select value={resultado} onValueChange={(v) => setResultado(v ?? "satisfatorio")} disabled={reprovaAutomaticamente}>
-              <SelectTrigger className="w-full">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {RESULTADOS.map((r) => (
-                  <SelectItem key={r.value} value={r.value}>
-                    {r.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
 
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
             <div>
