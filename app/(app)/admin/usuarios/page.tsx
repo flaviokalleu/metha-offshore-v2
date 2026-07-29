@@ -52,6 +52,7 @@ export default function AdminUsuariosPage() {
   const [eEmail, setEEmail] = useState("");
   const [ePerfil, setEPerfil] = useState("instrutor");
   const [eInstrutorId, setEInstrutorId] = useState(SEM_VINCULO);
+  const [eSenha, setESenha] = useState("");
 
   function reload() {
     api<Usuario[]>("/admin/usuarios").then(setRows);
@@ -103,10 +104,15 @@ export default function AdminUsuariosPage() {
     setEEmail(u.email);
     setEPerfil(u.perfil);
     setEInstrutorId(u.instrutorId ?? SEM_VINCULO);
+    setESenha("");
   }
 
   async function salvarEdicao() {
     if (!editando) return;
+    if (eSenha && eSenha.length < 8) {
+      toast.error("A nova senha deve ter ao menos 8 caracteres");
+      return;
+    }
     setSaving(true);
     try {
       await api(`/admin/usuarios/${editando.id}`, {
@@ -118,8 +124,15 @@ export default function AdminUsuariosPage() {
           instrutor_id: eInstrutorId === SEM_VINCULO ? null : eInstrutorId,
         }),
       });
-      toast.success("Usuário atualizado");
+      if (eSenha) {
+        await api(`/admin/usuarios/${editando.id}/senha`, {
+          method: "PUT",
+          body: JSON.stringify({ nova_senha: eSenha }),
+        });
+      }
+      toast.success(eSenha ? "Usuário e senha atualizados" : "Usuário atualizado");
       setEditando(null);
+      setESenha("");
       reload();
     } catch (err) {
       toast.error(err instanceof ApiClientError ? err.message : "Erro ao atualizar usuário");
@@ -361,6 +374,16 @@ export default function AdminUsuariosPage() {
                 </p>
               </div>
             )}
+            <div className="flex flex-col gap-2 border-t pt-4">
+              <Label>Nova senha (opcional)</Label>
+              <Input
+                type="password"
+                placeholder="Deixe em branco para manter a senha atual"
+                value={eSenha}
+                onChange={(e) => setESenha(e.target.value)}
+              />
+              <p className="text-xs text-muted-foreground">Preencha apenas se quiser redefinir a senha (mín. 8 caracteres).</p>
+            </div>
           </div>
           <DialogFooter>
             <Button onClick={salvarEdicao} disabled={saving || !eNome || !eEmail} className="w-full sm:w-auto">
