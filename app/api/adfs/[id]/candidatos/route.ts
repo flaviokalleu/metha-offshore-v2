@@ -17,10 +17,11 @@ export const POST = withErrorHandling(async (req, { params }: { params: Promise<
   const { id: adfId } = await params;
   await assertAdfAberta(adfId);
   const body = await req.json();
-  const { candidato_nome, candidato_registro_tmc, candidato_email, nivel_irata } = body;
+  const { candidato_nome, candidato_registro_tmc, candidato_email, nivel_irata, treinamento } = body;
   if (!candidato_nome || !candidato_registro_tmc || ![1, 2, 3].includes(Number(nivel_irata))) {
     return NextResponse.json({ error: "Dados inválidos" }, { status: 400 });
   }
+  const treino = ["1D", "2D", "3D"].includes(treinamento) ? treinamento : null;
 
   const total = await prisma.adfCandidato.count({ where: { adfId } });
   if (total >= 14) return NextResponse.json({ error: "Limite de 14 candidatos por ADF atingido" }, { status: 409 });
@@ -36,6 +37,7 @@ export const POST = withErrorHandling(async (req, { params }: { params: Promise<
         candidatoRegistroTmc: candidato_registro_tmc,
         candidatoEmail: candidato_email || null,
         nivelIrata: Number(nivel_irata),
+        treinamento: treino,
       },
     });
 

@@ -40,12 +40,16 @@ type Adf = {
   dataTermino: string;
 };
 
+const TREINAMENTO_NENHUM = "__none__";
+const TREINAMENTO_LABEL: Record<string, string> = { "1D": "Treinamento 1 D", "2D": "Treinamento 2 D", "3D": "Treinamento 3 D" };
+
 type Candidato = {
   id: string;
   candidatoNome: string;
   candidatoRegistroTmc: string;
   candidatoEmail: string | null;
   nivelIrata: number;
+  treinamento: string | null;
   ativo: boolean;
   status: string;
   resultado: string | null;
@@ -72,6 +76,7 @@ export default function AdfDetailPage() {
   const [registro, setRegistro] = useState("");
   const [nivel, setNivel] = useState("1");
   const [email, setEmail] = useState("");
+  const [treinamento, setTreinamento] = useState(TREINAMENTO_NENHUM);
 
   function reload() {
     api<Adf>(`/adfs/${id}`).then(setAdf);
@@ -90,12 +95,14 @@ export default function AdfDetailPage() {
           candidato_registro_tmc: registro,
           nivel_irata: Number(nivel),
           candidato_email: email || undefined,
+          treinamento: treinamento === TREINAMENTO_NENHUM ? null : treinamento,
         }),
       });
       toast.success("Candidato adicionado");
       setNome("");
       setRegistro("");
       setEmail("");
+      setTreinamento(TREINAMENTO_NENHUM);
       setOpen(false);
       reload();
     } catch (err) {
@@ -225,6 +232,20 @@ export default function AdfDetailPage() {
                 <SelectItem value="1">Nível 1</SelectItem>
                 <SelectItem value="2">Nível 2</SelectItem>
                 <SelectItem value="3">Nível 3</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="flex flex-col gap-2">
+            <Label>Treinamento (opcional)</Label>
+            <Select value={treinamento} onValueChange={(v) => setTreinamento(v ?? TREINAMENTO_NENHUM)}>
+              <SelectTrigger className="w-full">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value={TREINAMENTO_NENHUM}>Nenhum</SelectItem>
+                <SelectItem value="1D">Treinamento 1 D</SelectItem>
+                <SelectItem value="2D">Treinamento 2 D</SelectItem>
+                <SelectItem value="3D">Treinamento 3 D</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -374,6 +395,11 @@ export default function AdfDetailPage() {
                     <Badge variant="outline" className="text-xs">
                       N{c.nivelIrata}
                     </Badge>
+                    {c.treinamento && (
+                      <Badge variant="outline" className="text-xs">
+                        {TREINAMENTO_LABEL[c.treinamento]}
+                      </Badge>
+                    )}
                     {!c.ativo && (
                       <Badge variant="secondary" className="text-xs">
                         desativado
@@ -454,7 +480,12 @@ export default function AdfDetailPage() {
                         )}
                       </TableCell>
                       <TableCell>{c.candidatoRegistroTmc}</TableCell>
-                      <TableCell>N{c.nivelIrata}</TableCell>
+                      <TableCell>
+                        N{c.nivelIrata}
+                        {c.treinamento && (
+                          <span className="block text-xs text-muted-foreground">{TREINAMENTO_LABEL[c.treinamento]}</span>
+                        )}
+                      </TableCell>
                       <TableCell className="text-sm">
                         {c.qtdDiscLeves} leve(s) · {c.qtdDiscGraves} grave(s)
                       </TableCell>
@@ -688,6 +719,7 @@ function EditarCandidatoDialog({
   const [registro, setRegistro] = useState(candidato.candidatoRegistroTmc);
   const [email, setEmail] = useState(candidato.candidatoEmail ?? "");
   const [nivel, setNivel] = useState(String(candidato.nivelIrata));
+  const [treinamento, setTreinamento] = useState(candidato.treinamento ?? TREINAMENTO_NENHUM);
   const [saving, setSaving] = useState(false);
 
   async function salvar() {
@@ -700,6 +732,7 @@ function EditarCandidatoDialog({
           candidato_registro_tmc: registro,
           candidato_email: email || null,
           nivel_irata: Number(nivel),
+          treinamento: treinamento === TREINAMENTO_NENHUM ? null : treinamento,
         }),
       });
       toast.success("Candidato atualizado");
@@ -745,6 +778,20 @@ function EditarCandidatoDialog({
             {candidato.status === "finalizada" && (
               <p className="text-xs text-muted-foreground">Nível bloqueado: avaliação já finalizada.</p>
             )}
+          </div>
+          <div className="flex flex-col gap-2">
+            <Label>Treinamento</Label>
+            <Select value={treinamento} onValueChange={(v) => setTreinamento(v ?? TREINAMENTO_NENHUM)}>
+              <SelectTrigger className="w-full">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value={TREINAMENTO_NENHUM}>Nenhum</SelectItem>
+                <SelectItem value="1D">Treinamento 1 D</SelectItem>
+                <SelectItem value="2D">Treinamento 2 D</SelectItem>
+                <SelectItem value="3D">Treinamento 3 D</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
         </div>
         <DialogFooter>

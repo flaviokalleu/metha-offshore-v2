@@ -134,6 +134,7 @@ model AdfCandidato {
   candidatoRegistroTmc    String
   candidatoEmail          String?
   nivelIrata              Int
+  treinamento             String?   // "1D" | "2D" | "3D" | null
   ativo                   Boolean   @default(true) // false = desativado (ex: desistência)
   resultado               String?
   aprovado                Boolean?
