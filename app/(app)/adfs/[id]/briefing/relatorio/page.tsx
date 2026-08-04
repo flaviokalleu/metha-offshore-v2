@@ -26,6 +26,13 @@ const ITENS = [
   "Planos de Socorro",
 ];
 
+const LINKS = [
+  { titulo: "Prevenção de Problemas Fatais", url: "https://irata.org/media/videos/report-a-problem-prevent-a-fatality-videos" },
+  { titulo: "Cultura de Gerenciamento de Segurança", url: "https://irata.org/media/videos/management-and-safety-culture-videos" },
+  { titulo: "Gerenciamento de Limite em Acesso por Cordas", url: "https://irata.org/media/videos/edge-and-rope-management-videos" },
+  { titulo: "Pesquisa de Satisfação", url: "https://pt.surveymonkey.com/r/3GPGZFQ" },
+];
+
 type Adf = {
   numeroAdf: string;
   associacao_nome: string;
@@ -96,6 +103,18 @@ export default function RelatorioBriefingPage() {
                 <li key={idx} className="flex items-start gap-2">
                   <span className="font-bold">{briefing.itens_confirmados[idx] ? "☑" : "☐"}</span>
                   <span>{item}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <div className="mb-5 break-inside-avoid">
+            <h2 className="mb-1.5 border-b border-black pb-1 text-sm font-bold uppercase">Links importantes</h2>
+            <ul className="flex flex-col gap-1 text-sm">
+              {LINKS.map((l) => (
+                <li key={l.url}>
+                  <span className="font-medium">{l.titulo}:</span>{" "}
+                  <span className="break-all underline">{l.url}</span>
                 </li>
               ))}
             </ul>

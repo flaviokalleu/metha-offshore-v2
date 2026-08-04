@@ -11,7 +11,14 @@ import { SignaturePad } from "@/components/signature-pad";
 import { BackButton } from "@/components/back-button";
 import { api, ApiClientError } from "@/lib/api-client";
 import Link from "next/link";
-import { Mail, Printer } from "lucide-react";
+import { ExternalLink, Mail, Printer } from "lucide-react";
+
+const LINKS = [
+  { titulo: "Prevenção de Problemas Fatais", url: "https://irata.org/media/videos/report-a-problem-prevent-a-fatality-videos" },
+  { titulo: "Cultura de Gerenciamento de Segurança", url: "https://irata.org/media/videos/management-and-safety-culture-videos" },
+  { titulo: "Gerenciamento de Limite em Acesso por Cordas", url: "https://irata.org/media/videos/edge-and-rope-management-videos" },
+  { titulo: "Pesquisa de Satisfação", url: "https://pt.surveymonkey.com/r/3GPGZFQ" },
+];
 
 const ITENS = [
   "Objetivo e cronograma da ADF",
@@ -160,6 +167,27 @@ export default function BriefingPage() {
               <Checkbox checked={Boolean(briefing.itens_confirmados[idx])} onCheckedChange={() => toggleItem(idx)} />
               {item}
             </label>
+          ))}
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Links importantes</CardTitle>
+        </CardHeader>
+        <CardContent className="flex flex-col gap-2">
+          <p className="text-sm text-muted-foreground">Materiais enviados aos alunos junto com o briefing.</p>
+          {LINKS.map((l) => (
+            <a
+              key={l.url}
+              href={l.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-2 text-sm font-medium text-primary hover:underline"
+            >
+              <ExternalLink className="size-4 shrink-0" />
+              {l.titulo}
+            </a>
           ))}
         </CardContent>
       </Card>
