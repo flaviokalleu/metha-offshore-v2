@@ -21,6 +21,9 @@ const ITENS = [
   "Áreas restritas e sinalização",
   "Contatos de emergência",
   "Dúvidas e esclarecimentos gerais",
+  "Primeiros Socorros",
+  "Avaliação de Risco (banner no CT)",
+  "Planos de Socorro",
 ];
 
 type Adf = {
@@ -97,20 +100,6 @@ export default function RelatorioBriefingPage() {
               ))}
             </ul>
           </div>
-
-          {briefing.temas_abordados && (
-            <div className="mb-5 break-inside-avoid">
-              <h2 className="mb-1.5 border-b border-black pb-1 text-sm font-bold uppercase">Temas abordados</h2>
-              <p className="whitespace-pre-wrap text-sm">{briefing.temas_abordados}</p>
-            </div>
-          )}
-
-          {briefing.observacoes && (
-            <div className="mb-5 break-inside-avoid">
-              <h2 className="mb-1.5 border-b border-black pb-1 text-sm font-bold uppercase">Observações</h2>
-              <p className="whitespace-pre-wrap text-sm">{briefing.observacoes}</p>
-            </div>
-          )}
 
           <div className="mb-5 break-inside-avoid">
             <h2 className="mb-1.5 border-b border-black pb-1 text-sm font-bold uppercase">Assinaturas dos candidatos</h2>

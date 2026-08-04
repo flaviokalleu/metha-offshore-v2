@@ -5,7 +5,6 @@ import { useParams } from "next/navigation";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { SignaturePad } from "@/components/signature-pad";
@@ -28,6 +27,9 @@ const ITENS = [
   "Áreas restritas e sinalização",
   "Contatos de emergência",
   "Dúvidas e esclarecimentos gerais",
+  "Primeiros Socorros",
+  "Avaliação de Risco (banner no CT)",
+  "Planos de Socorro",
 ];
 
 type Candidato = { id: string; candidatoNome: string; ativo: boolean };
@@ -77,8 +79,6 @@ export default function BriefingPage() {
         method: "PUT",
         body: JSON.stringify({
           itens_confirmados: briefing.itens_confirmados,
-          temas_abordados: briefing.temas_abordados,
-          observacoes: briefing.observacoes,
           instrutor_assinatura: assinaturaInstrutor || undefined,
         }),
       });
@@ -161,24 +161,6 @@ export default function BriefingPage() {
               {item}
             </label>
           ))}
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Temas abordados e observações</CardTitle>
-        </CardHeader>
-        <CardContent className="flex flex-col gap-4">
-          <Textarea
-            placeholder="Temas abordados"
-            value={briefing.temas_abordados ?? ""}
-            onChange={(e) => setBriefing((b) => (b ? { ...b, temas_abordados: e.target.value } : b))}
-          />
-          <Textarea
-            placeholder="Observações"
-            value={briefing.observacoes ?? ""}
-            onChange={(e) => setBriefing((b) => (b ? { ...b, observacoes: e.target.value } : b))}
-          />
         </CardContent>
       </Card>
 

@@ -18,6 +18,16 @@ const ITENS = [
   "Áreas restritas e sinalização",
   "Contatos de emergência",
   "Dúvidas e esclarecimentos gerais",
+  "Primeiros Socorros",
+  "Avaliação de Risco (banner no CT)",
+  "Planos de Socorro",
+];
+
+const LINKS = [
+  { titulo: "Prevenção de Problemas Fatais", url: "https://irata.org/media/videos/report-a-problem-prevent-a-fatality-videos" },
+  { titulo: "Cultura de Gerenciamento de Segurança", url: "https://irata.org/media/videos/management-and-safety-culture-videos" },
+  { titulo: "Gerenciamento de Limite em Acesso por Cordas", url: "https://irata.org/media/videos/edge-and-rope-management-videos" },
+  { titulo: "Pesquisa de Satisfação", url: "https://pt.surveymonkey.com/r/3GPGZFQ" },
 ];
 
 function esc(s: string) {
@@ -55,6 +65,11 @@ export const POST = withErrorHandling(async (req, { params }: { params: Promise<
       `<li style="margin:4px 0">${confirmados[i] ? "✅" : "⬜"} ${esc(item)}</li>`
   ).join("");
 
+  const linksHtml = LINKS.map(
+    (l) =>
+      `<li style="margin:8px 0"><a href="${l.url}" style="color:#FF7420;text-decoration:none;font-weight:bold" target="_blank" rel="noopener">${esc(l.titulo)}</a></li>`
+  ).join("");
+
   const periodo = `${adf.dataInicio.toLocaleDateString("pt-BR")} a ${adf.dataTermino.toLocaleDateString("pt-BR")}`;
   const html = `
     <div style="font-family:Arial,Helvetica,sans-serif;max-width:600px;margin:0 auto;color:#111">
@@ -64,8 +79,8 @@ export const POST = withErrorHandling(async (req, { params }: { params: Promise<
       <strong>Período:</strong> ${periodo}</p>
       <h3>Itens abordados no briefing</h3>
       <ul style="list-style:none;padding-left:0">${itensHtml}</ul>
-      ${briefing.temasAbordados ? `<h3>Temas abordados</h3><p>${esc(briefing.temasAbordados)}</p>` : ""}
-      ${briefing.observacoes ? `<h3>Observações</h3><p>${esc(briefing.observacoes)}</p>` : ""}
+      <h3>Links importantes</h3>
+      <ul style="padding-left:18px">${linksHtml}</ul>
       <hr style="border:none;border-top:1px solid #e2e8f0;margin:24px 0"/>
       <p style="font-size:12px;color:#64748b">E-mail enviado automaticamente pelo sistema Metha Offshore por ${esc(user.nome)}.</p>
     </div>`;
