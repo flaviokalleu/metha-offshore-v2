@@ -27,6 +27,8 @@ const ITENS = [
 ];
 
 const LINKS = [
+  { titulo: "ICOP", url: "https://drive.google.com/file/d/1rRWEFb2TwYc05rrIEllYhKLyQswgB3La/view" },
+  { titulo: "TACS", url: "https://drive.google.com/file/d/1YZUlYOMI0MolTo5RIf0ZAS4euq167KHE/view?usp=sharing" },
   { titulo: "Prevenção de Problemas Fatais", url: "https://irata.org/media/videos/report-a-problem-prevent-a-fatality-videos" },
   { titulo: "Cultura de Gerenciamento de Segurança", url: "https://irata.org/media/videos/management-and-safety-culture-videos" },
   { titulo: "Gerenciamento de Limite em Acesso por Cordas", url: "https://irata.org/media/videos/edge-and-rope-management-videos" },
