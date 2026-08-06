@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { HardHat, ExternalLink } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { api } from "@/lib/api-client";
 import { useAuth } from "@/lib/auth-context";
@@ -36,6 +38,18 @@ export default function DashboardPage() {
         <h1 className="text-2xl font-semibold">Olá, {user?.nome?.split(" ")[0]}</h1>
         <p className="text-sm text-muted-foreground">Resumo das Avaliações de Desempenho de Campo (ADFs).</p>
       </div>
+
+      <Button
+        nativeButton={false}
+        render={<a href="http://168.231.97.94" target="_blank" rel="noopener noreferrer" />}
+        className="h-auto justify-between gap-2 py-4 text-base font-semibold"
+      >
+        <span className="flex items-center gap-2">
+          <HardHat className="size-5" />
+          INSPEÇÃO DE EQUIPAMENTOS
+        </span>
+        <ExternalLink className="size-4 opacity-80" />
+      </Button>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         <Card>
