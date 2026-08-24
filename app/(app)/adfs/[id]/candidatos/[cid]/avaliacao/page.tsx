@@ -52,10 +52,20 @@ export default function AvaliacaoPage() {
   const [assinaturaInstrutor, setAssinaturaInstrutor] = useState<string | null>(null);
 
   function reload() {
-    api<{ nivel: number; candidato_nome: string; manobras: Manobra[] }>(`/adfs/${id}/candidatos/${cid}/avaliacoes`).then((d) => {
+    api<{
+      nivel: number;
+      candidato_nome: string;
+      resultado: string | null;
+      assinatura_candidato: string | null;
+      assinatura_instrutor: string | null;
+      manobras: Manobra[];
+    }>(`/adfs/${id}/candidatos/${cid}/avaliacoes`).then((d) => {
       setNivel(d.nivel);
       setCandidatoNome(d.candidato_nome);
       setManobras(d.manobras);
+      if (d.assinatura_candidato) setAssinaturaCandidato(d.assinatura_candidato);
+      if (d.assinatura_instrutor) setAssinaturaInstrutor(d.assinatura_instrutor);
+      if (d.resultado && d.resultado !== "reprovado") setResultado(d.resultado);
     });
     api<Discrepancia[]>("/catalogo/discrepancias").then(setDiscrepancias);
   }

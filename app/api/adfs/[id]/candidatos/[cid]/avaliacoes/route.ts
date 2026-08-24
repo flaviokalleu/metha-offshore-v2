@@ -42,7 +42,17 @@ export const GET = withErrorHandling(async (req, { params }: { params: Promise<{
     };
   });
 
-  return NextResponse.json({ nivel, candidato_nome, candidato_registro, manobras: out });
+  return NextResponse.json({
+    nivel,
+    candidato_nome,
+    candidato_registro,
+    status: candidato.status,
+    resultado: candidato.resultado,
+    aprovado: candidato.aprovado,
+    assinatura_candidato: candidato.assinaturaCandidato,
+    assinatura_instrutor: candidato.assinaturaInstrutor,
+    manobras: out,
+  });
 });
 
 export const PUT = withErrorHandling(async (req, { params }: { params: Promise<{ id: string; cid: string }> }) => {
