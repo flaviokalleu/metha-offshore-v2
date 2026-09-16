@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
 import { NavShell } from "@/components/nav-shell";
+import { LigacoesProvider } from "@/components/ligacoes/ligacoes-provider";
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
@@ -18,5 +19,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   }
   if (!user) return null;
 
-  return <NavShell>{children}</NavShell>;
+  return (
+    <LigacoesProvider>
+      <NavShell>{children}</NavShell>
+    </LigacoesProvider>
+  );
 }
