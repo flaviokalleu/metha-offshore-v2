@@ -2,18 +2,16 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, ClipboardList, Users, ShieldCheck, LogOut, Menu, X, FileSignature, FolderOpen, Phone } from "lucide-react";
+import { LayoutDashboard, ClipboardList, Users, ShieldCheck, LogOut, Menu, X, FileSignature, FolderOpen } from "lucide-react";
 import { useState } from "react";
 import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { useLigacoes } from "@/components/ligacoes/ligacoes-provider";
 
 const NAV = [
   { href: "/dashboard", label: "Início", icon: LayoutDashboard, bottom: true },
   { href: "/adfs", label: "ADFs", icon: ClipboardList, bottom: true },
   { href: "/termo", label: "Indução de Instrutores", icon: FileSignature, bottom: true },
-  { href: "/ligacoes", label: "Ligações", icon: Phone, ligacoes: true },
   { href: "/admin/instrutores", label: "Instrutores", icon: Users, adminOnly: true, bottom: true },
   { href: "/admin/usuarios", label: "Usuários", icon: ShieldCheck, adminOnly: true },
   { href: "/admin/termos", label: "Indução de Instrutores", icon: FileSignature, adminOnly: true },
@@ -23,10 +21,9 @@ const NAV = [
 export function NavShell({ children }: { children: React.ReactNode }) {
   const { user, logout } = useAuth();
   const pathname = usePathname();
-  const { habilitado: ligacoesHabilitadas } = useLigacoes();
   const [menuOpen, setMenuOpen] = useState(false);
 
-  const items = NAV.filter((n) => (!n.adminOnly || user?.perfil === "admin") && (!n.ligacoes || ligacoesHabilitadas));
+  const items = NAV.filter((n) => !n.adminOnly || user?.perfil === "admin");
   const isActive = (href: string) => pathname === href || pathname?.startsWith(href + "/");
 
   return (
@@ -65,7 +62,7 @@ export function NavShell({ children }: { children: React.ReactNode }) {
                 <X className="size-4" />
               </button>
             </div>
-            {items.map((n) => (
+            {NAV.filter((n) => !n.adminOnly || user?.perfil === "admin").map((n) => (
               <Link
                 key={n.href}
                 href={n.href as any}

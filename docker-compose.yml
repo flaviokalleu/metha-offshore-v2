@@ -18,37 +18,12 @@ services:
       SMTP_USER: ${SMTP_USER:-}
       SMTP_PASS: ${SMTP_PASS:-}
       SMTP_FROM: ${SMTP_FROM:-}
-      # Serviço de ligações (ArendCalls). Vazio = módulo de ligações desligado.
-      ARENDCALLS_URL: ${ARENDCALLS_URL:-http://127.0.0.1:8090}
-      ARENDCALLS_API_KEY: ${ARENDCALLS_API_KEY:-}
     volumes:
       - app_data:/app/data
-    # Rede do host, escutando só em 127.0.0.1:3001: o nginx nativo do host faz o proxy
-    # reverso. Isolado do Metha Inspeção (porta 3000) e demais serviços da VPS.
-    # (Rede do host para falar com o ArendCalls em 127.0.0.1 sem abrir porta.)
-    network_mode: host
-    command: ["npx", "next", "start", "-p", "3001", "-H", "127.0.0.1"]
-
-  # Ligações de voz do WhatsApp (https://github.com/nathanarend/ArendCalls).
-  # Serviço Go separado; o Next.js conversa com ele pela API usando ARENDCALLS_API_KEY.
-  arendcalls:
-    image: nathanarend/arendcalls:v2026.21.1
-    container_name: metha_arendcalls
-    restart: unless-stopped
-    # Rede do host: o WebRTC com o navegador precisa do IP público real da VPS.
-    network_mode: host
-    environment:
-      API_KEY: ${ARENDCALLS_API_KEY:?defina ARENDCALLS_API_KEY no .env}
-      GOMEMLIMIT: 400MiB
-    # Repetir -addr/-static sobrescreve o ENTRYPOINT da imagem (o Go usa o último valor):
-    # API só em localhost e sem o painel web próprio do ArendCalls (o painel dele entrega
-    # um cookie de admin a quem abrir a página — aqui o acesso é só pelo Metha).
-    command: ["-addr", "127.0.0.1:8090", "-static", "", "-recordings-dir", "/app/data/recordings"]
-    volumes:
-      - arendcalls_data:/app/data
-    # Áudio WebRTC usa UDP 50000-50100 — libere no firewall da VPS:
-    #   ufw allow 50000:50100/udp
+    # Publicado somente em localhost: o nginx nativo do host faz o proxy reverso.
+    # Isolado do Metha Inspeção (porta 3000) e demais serviços já rodando na VPS.
+    ports:
+      - "127.0.0.1:3001:3000"
 
 volumes:
   app_data:
-  arendcalls_data:

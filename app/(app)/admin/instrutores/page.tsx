@@ -2,8 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import Link from "next/link";
-import { Plus, Pencil, Phone } from "lucide-react";
+import { Plus, Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -14,7 +13,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { FiltroSegmentado } from "@/components/filtro-segmentado";
 import { api, ApiClientError } from "@/lib/api-client";
-import { useLigacoes } from "@/components/ligacoes/ligacoes-provider";
 
 type Instrutor = {
   id: string;
@@ -27,7 +25,6 @@ type Instrutor = {
 };
 
 export default function AdminInstrutoresPage() {
-  const { habilitado: ligacoesHabilitadas } = useLigacoes();
   const [rows, setRows] = useState<Instrutor[]>([]);
   const [filtro, setFiltro] = useState("ativos");
   const [open, setOpen] = useState(false);
@@ -199,11 +196,6 @@ export default function AdminInstrutoresPage() {
               <div className="flex flex-col items-end gap-2">
                 <Badge variant={i.ativo ? "default" : "secondary"}>{i.ativo ? "ativo" : "inativo"}</Badge>
                 <div className="flex gap-2">
-                  {ligacoesHabilitadas && i.telefone && (
-                    <Button nativeButton={false} variant="success" size="sm" render={<Link href={`/ligacoes?numero=${encodeURIComponent(i.telefone)}`} />} aria-label={`Ligar para ${i.nome}`}>
-                      <Phone className="size-3.5" />
-                    </Button>
-                  )}
                   <Button variant="outline" size="sm" onClick={() => abrirEdicao(i)}>
                     Editar
                   </Button>
@@ -242,20 +234,11 @@ export default function AdminInstrutoresPage() {
                   <TableCell className="font-medium">{i.nome}</TableCell>
                   <TableCell>{i.registroIrata}</TableCell>
                   <TableCell>N{i.nivel}</TableCell>
-                  <TableCell className="text-sm text-muted-foreground">
-                    {i.email ?? "—"}
-                    {i.telefone && <span className="block">{i.telefone}</span>}
-                  </TableCell>
+                  <TableCell className="text-sm text-muted-foreground">{i.email ?? "—"}</TableCell>
                   <TableCell>
                     <Badge variant={i.ativo ? "default" : "secondary"}>{i.ativo ? "ativo" : "inativo"}</Badge>
                   </TableCell>
                   <TableCell className="flex justify-end gap-2 text-right">
-                    {ligacoesHabilitadas && i.telefone && (
-                      <Button nativeButton={false} variant="success" size="sm" className="gap-1.5" render={<Link href={`/ligacoes?numero=${encodeURIComponent(i.telefone)}`} />}>
-                        <Phone className="size-3.5" />
-                        Ligar
-                      </Button>
-                    )}
                     <Button variant="outline" size="sm" className="gap-1.5" onClick={() => abrirEdicao(i)}>
                       <Pencil className="size-3.5" />
                       Editar
